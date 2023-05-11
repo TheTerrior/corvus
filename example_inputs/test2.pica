@@ -1,0 +1,7 @@
+let x = 3
+let y = x + 4
+let z = 0
+if y == 7:
+    z = 5
+else:
+    z = 1

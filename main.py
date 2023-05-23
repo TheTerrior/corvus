@@ -13,6 +13,8 @@ from dataclasses import dataclass
 
 
 grouping_symbols = {"'", '"'}
+enclosing_symbols = {'(', '{', '['}
+operator_symbols = {'+', '-', '*', '/', '%', '=', '>', '<', '|', '&', '.', ':', '!', ',', '^'}
 
 
 @dataclass
@@ -22,7 +24,7 @@ class Node:
     values: list[Any]
 
 
-def tokenize1(input_file: str) -> list[str]:
+def tokenize(input_file: str) -> list[str]:
     """Tokenizes the input file. All languages are tokenized the same way."""
     global grouping_symbols
 
@@ -72,20 +74,17 @@ def tokenize1(input_file: str) -> list[str]:
                         elif c == "\n": #sudden end of line, throw away the current token
                             token = ""
                         elif c in grouping_symbols: #start a group
-                            #tokens.append("MODE1")
                             tokens.append(token)
                             token = ""
                             group = c
                             mode = 2
                         else: #found something that takes us out of this mode
-                            #tokens.append("MODE1")
                             tokens.append(token)
                             token = c
                             mode = 0
 
                     case 2: #grouping
                         if group == c: #end the group
-                            #tokens.append("MODE2")
                             tokens.append(c + token + c)
                             token = ""
                             mode = 0
@@ -102,72 +101,7 @@ def tokenize1(input_file: str) -> list[str]:
     return tokens
                 
 
-
-
-def tokenize(input_file: str) -> list[str]:
-    """Tokenizes the input file. All languages are tokenized the same way."""
-    global grouping_symbols
-
-    tokens = [] #holds all tokens
-    group = None
-    with open(input_file, "r") as file:
-
-        mode = 1 #0 = neutral, 1 = newline
-        while (line := file.readline()) != "": #iterate through every line
-            #line = line_raw[:-1] #skip the newline
-
-            token = "" #holds the current token
-            for c in line:
-
-                #handle groups
-                if group == None: #not in a group yet
-                    if c in grouping_symbols: #start a group
-                        group = c
-                        token += c
-                        continue
-                    elif c == "\n": #new line
-                        if token != "":
-                            tokens.append(token)
-                        tokens.append("\n")
-                        token = ""
-                        continue
-                else: #in a group
-                    if group == c: #ending a group
-                        if token != "":
-                            tokens.append(token + c)
-                        token = ""
-                        group = None
-                        continue
-                    elif c == "\n": #in a group, yet reached a newline
-                        raise Exception("invalid syntax")
-
-                #handle normal cases
-                if c == " ": #start a new token
-                    if mode == 1 and (len(tokens) == 0 or tokens[-1] == "\n"): #handle indentation
-                        token += " "
-                        continue
-
-                    #last token was not special
-                    if token != "":
-                        tokens.append(token)
-                    token = ""
-                elif c == ":":
-                    if token != "":
-                        tokens.append(token)
-                    token = ":"
-                elif c == "=":
-                    if token != "":
-                        tokens.append(token)
-                    tokens.append("=")
-                    token = ""
-                else: #just append, while remaining in the group
-                    token += c
-
-    return tokens
-
-
-def parse() -> None:
-
+def parse(tokens: list[str]) -> None:
     pass
 
 
@@ -180,7 +114,7 @@ def main() -> None:
     input_file = sys.argv[1]
     #tokens = tokenize(input_file)
     #print(tokens)
-    tokens = tokenize1(input_file)
+    tokens = tokenize(input_file)
     print(tokens)
 
 if __name__ == "__main__":

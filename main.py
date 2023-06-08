@@ -1,4 +1,5 @@
-import sys
+import os
+import argparse
 from typing import Any
 from dataclasses import dataclass
 
@@ -107,14 +108,37 @@ def parse(tokens: list[str]) -> None:
 
 def main() -> None:
     """Main entry point."""
-    if len(sys.argv) != 2:
-        print("Didn't receive exactly 2 arguments!")
-        return 
+    aparser = argparse.ArgumentParser(
+            prog = "corvus",
+            )
+    # non-positional
+    aparser.add_argument("-V", "--version", action = "version", version = "%(prog)s 0.1")
 
-    input_file = sys.argv[1]
+    # required
+    aparser.add_argument("<FILE>", help = "input file")
+
+    # optional
+    aparser.add_argument("-l", "--lang", action = "store", choices = ["python"], default = "python", help = "output language")
+    aparser.add_argument("-o", "--output", action = "store", dest = "<OUT>", help = "output file")
+
+    args = vars(aparser.parse_args())
+
+    #print(args)
+    #print(args["lang"])
+    #print(args["<FILE>"])
+    #print(args["<OUT>"])
+    #print(args["lang"])
+
+
     #tokens = tokenize(input_file)
     #print(tokens)
-    tokens = tokenize(input_file)
+
+    if not os.path.isfile(args["<FILE>"]):
+        print(f"Error: file \"{args['<FILE>']}\" does not exist")
+        return
+
+    print("Tokenizing...")
+    tokens = tokenize(args["<FILE>"])
     print(tokens)
 
 if __name__ == "__main__":

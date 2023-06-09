@@ -1,28 +1,11 @@
 import os
 import argparse
 from typing import Any
-from dataclasses import dataclass
-
-
-#grouping_symbols = {
-#    #"(": ")",
-#    #"{": "}",
-#    #"[": "]",
-#    "'": "'",
-#    '"': '"',
-#}
 
 
 grouping_symbols = {"'", '"'}
-enclosing_symbols = {'(', '{', '['}
-operator_symbols = {'+', '-', '*', '/', '%', '=', '>', '<', '|', '&', '.', ':', '!', ',', '^'}
-
-
-@dataclass
-class Node:
-    """Struct for structing an abstract syntax tree."""
-    token: str | None
-    values: list[Any]
+enclosing_symbols = {'(', '{', '['} #) } ]
+operator_symbols = {'+', '-', '*', '/', '%', '=', '>', '<', '|', '&', '.', ':', '!', ',', '^', '$'}
 
 
 def tokenize(input_file: str) -> list[str]:

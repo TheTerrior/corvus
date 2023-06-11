@@ -131,9 +131,11 @@ def tokenize(input_file: str) -> list[str]:
             raise Exception("invalid syntax")
 
         # final whitespace cleanup at start and end
-        if len(tokens) > 1 and tokens[0].strip() == '' and tokens[1] == '\n':
+        #if len(tokens) > 1 and tokens[0].strip() == '' and tokens[1] == '\n':
+        while len(tokens) > 1 and tokens[0].strip() == '' and tokens[1] == '\n':
             tokens = tokens[2:]
-        if len(tokens) > 1 and tokens[-1].strip() == '' and tokens[-2] == '\n':
+        #if len(tokens) > 1 and tokens[-1].strip() == '' and tokens[-2] == '\n':
+        while len(tokens) > 1 and tokens[-1].strip() == '' and tokens[-2] == '\n':
             tokens = tokens[:-2]
 
     return tokens

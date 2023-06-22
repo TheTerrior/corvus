@@ -99,6 +99,24 @@ def parse(tokens: list[str]) -> tuple[int, MainScope | str]:
     #handle import statements here
     imports: list[Import] = []
     includes: list[Include] = []
+    res = parse_modules(it, imports, includes)
+    if res[0] != ParseError.Ok:
+        return (res[0], res[1])  #found an error
+
+    #handle recursive scopes here
+    res = parse_recursive(it, 0)
+    if res[0] == 0 and isinstance(res[1], Scope):
+        main = MainScope(res[1].level, res[1].instructions, imports, includes)
+        return (ParseError.Ok, main)
+    elif isinstance(res[1], str):  #found an error
+        return (res[0], res[1])
+
+    # unreachable
+    return (ParseError.BigBad, "big bad things happened, reached unreachable point")
+
+
+def parse_modules(it: Fakerator, imports: list[Import], includes: list[Include]) -> tuple[int, MainScope | str]:
+    """Parses module imports and includes."""
     while True:
         line = it.peak_line()[:-1]
         print(line)
@@ -174,17 +192,8 @@ def parse(tokens: list[str]) -> tuple[int, MainScope | str]:
         
         it.get_line()  #consume the next line
 
-
-    #handle recursive scopes here
-    res = parse_recursive(it, 0)
-    if res[0] == 0 and isinstance(res[1], Scope):
-        main = MainScope(res[1].level, res[1].instructions, imports, includes)
-        return (ParseError.Ok, main)
-    elif isinstance(res[1], str):
-        return (res[0], res[1])
-
     # unreachable
-    return (ParseError.BigBad, "big bad things happened, reached unreachable point")
+    return (ParseError.Ok, "")
 
 
 def parse_recursive(it: Fakerator, level: int) -> tuple[int, Scope | str]:

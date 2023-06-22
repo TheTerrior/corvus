@@ -48,12 +48,12 @@ class Scope:
 @dataclass
 class Module:
     """Base class for imports and includes."""
-    module: str
+    module: list[str]
 
 
 @dataclass
 class Import(Module):
-    """Imports an external module."""
+    """Imports a standard or third-party module."""
 
 
 @dataclass
@@ -64,7 +64,8 @@ class Include(Module):
 @dataclass
 class MainScope(Scope):
     """Outer container for the AST."""
-    modules: list[Module]
+    imports: list[Import]
+    includes: list[Include]
 
 
 

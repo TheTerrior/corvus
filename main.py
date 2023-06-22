@@ -30,8 +30,14 @@ def main() -> None:
     print(tokens)
 
     print("Parsing...")
-    parsed = parser.parse(tokens)
-    print(parsed)
+    ast = parser.parse(tokens)
+    print(ast)
+
+    if isinstance(ast[1], str):
+        print(ast[1])
+        return
+    elif isinstance(ast[1], parser.MainScope):
+        parser.verify_ast(ast[1])
 
 
 if __name__ == "__main__":

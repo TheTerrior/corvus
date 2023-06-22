@@ -1,6 +1,7 @@
 //test
 import math
-include test.pica
+include test::pica
+import math::pi
 
 // normal function
 let x(y: int, z: int): int = //end of line comment

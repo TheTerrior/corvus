@@ -1,4 +1,4 @@
-from typing import Any, Self
+#from typing import Any, Self
 from dataclasses import dataclass
 
 
@@ -62,10 +62,9 @@ class Include(Module):
 
 
 @dataclass
-class MainScope:
+class MainScope(Scope):
     """Outer container for the AST."""
     modules: list[Module]
-    scope: Scope
 
 
 

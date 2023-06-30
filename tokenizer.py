@@ -7,7 +7,7 @@ def tokenize(input_file: str) -> list[str]:
     """Tokenizes the input file. All languages are tokenized the same way."""
     global grouping_symbols, enclosing_symbols, operator_symbols
 
-    tokens = [] #holds all tokens
+    tokens: list[str] = [] #holds all tokens
     group = None
     with open(input_file, "r") as file:
 
@@ -35,11 +35,12 @@ def tokenize(input_file: str) -> list[str]:
                                 #tokens.append("MODE0")
                                 tokens.append(token)
                             tokens.append("\n")
+                            #if len(tokens) > 3 and tokens[-2].strip() == "" and tokens[-4:-2] == tokens[-2:]: #if multiple newlines on same level
+                            #    tokens = tokens[:-2]
                             token = ""
                             mode = 1
                         elif c in grouping_symbols: #start a group
                             if token != "":
-                                #tokens.append("MODE0")
                                 tokens.append(token)
                             token = ""
                             group = c
@@ -65,6 +66,8 @@ def tokenize(input_file: str) -> list[str]:
                         if c == " ": #more spaces
                             token += " "
                         elif c == "\n": #sudden end of line, throw away the current token
+                            #if len(tokens) > 3 and tokens[-2].strip() == "" and tokens[-4:-2] == tokens[-2:]: #if multiple newlines on same level
+                            #    tokens = tokens[:-2]
                             token = ""
                         elif c in grouping_symbols: #start a group
                             tokens.append(token)
@@ -124,11 +127,25 @@ def tokenize(input_file: str) -> list[str]:
         elif mode in [2, 4]: #should not be in these states once we finish the file
             raise Exception("invalid syntax")
 
+        # double newline cleanup, O(n) but simplifies processes later, will be incorporated into main lexer later
+        level = 0
+        length_const = len(tokens) - 1
+        cap = len(tokens)
+        i = 0
+        while i < cap:
+            if tokens[i].strip() == "" and i < length_const and tokens[i+1] == '\n' and len(tokens[i]) == level: #found an indentation token
+                tokens.pop(i)
+                tokens.pop(i)
+                cap -= 2
+                length_const -= 2
+            i += 1
+
         # final whitespace cleanup at start and end
         #if len(tokens) > 1 and tokens[0].strip() == '' and tokens[1] == '\n':
-        while len(tokens) > 1 and tokens[0].strip() == '' and tokens[1] == '\n':
-            tokens = tokens[2:]
-        #if len(tokens) > 1 and tokens[-1].strip() == '' and tokens[-2] == '\n':
+        #while len(tokens) > 1 and tokens[0].strip() == '' and tokens[1] == '\n':
+        #    tokens = tokens[2:]
+
+        # final whitespace cleanup, remove all useless newlines at end
         while len(tokens) > 1 and tokens[-1].strip() == '' and tokens[-2] == '\n':
             tokens = tokens[:-2]
 

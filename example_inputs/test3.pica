@@ -1,11 +1,29 @@
 //test
+
+
+
 import math
 include test::pica
+
+
+
+
+
+
+
+
+
 import math::pi
 
 // normal function
 let x(y: int, z: int): int = //end of line comment
     y+z
+
+
+
+
+
+
 
 /*
 multi-line comment
@@ -15,6 +33,8 @@ let y(a: int, b: int): int = a + b
 
 let with_greeting(input: str): int =
     let greeting: str = "hello " + input
+
+
     print(greeting + "!")
 
 print(x(3, 4))

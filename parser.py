@@ -28,15 +28,17 @@ class Fakerator:
         accum = []
 
         while self.position < len(self.tokens) - 1:
-            self.position += 1
             st = self.tokens[self.position]
             if st == '\n':
                 accum.append(st)
+                self.position += 1
                 return accum
             elif st.strip() == "":  #handle indentation
+                self.position += 1
                 continue
             else:
                 accum.append(st)
+                self.position += 1
         return accum
 
 
@@ -45,31 +47,51 @@ class Fakerator:
         accum = ""
 
         while self.position < len(self.tokens) - 1:
-            self.position += 1
             st = self.tokens[self.position]
             if st == '\n':
+                self.position += 1
                 return accum + st
             elif st.strip() == "":  #handle indentation
+                self.position += 1
                 continue
             else:
                 accum += st
+                self.position += 1
         return accum
 
-    def peak_line(self) -> list[str]:
+    def peak_line_tokens(self) -> list[str]:
         """Returns the next line in the iterator without altering the Fakerator."""
         accum = []
         pos = self.position
 
         while self.position < len(self.tokens) - 1:
-            pos += 1
             st = self.tokens[pos]
             if st == '\n':
                 accum.append(st)
+                pos += 1
                 return accum
             elif st.strip() == "":  #handle indentation
+                pos += 1
                 continue
             else:
                 accum.append(st)
+                pos += 1
+        return accum
+
+    def peak_line_tokens_indentation(self) -> list[str]:
+        """Returns the next line in the iterator (including the indentation) without altering the Fakerator."""
+        accum = []
+        pos = self.position
+
+        while self.position < len(self.tokens) - 1:
+            st = self.tokens[pos]
+            if st == '\n':
+                accum.append(st)
+                pos += 1
+                return accum
+            else:
+                accum.append(st)
+                pos += 1
         return accum
 
     def peak_line_str(self) -> str:
@@ -78,15 +100,21 @@ class Fakerator:
         pos = self.position
 
         while self.position < len(self.tokens) - 1:
-            pos += 1
             st = self.tokens[pos]
             if st == '\n':
+                pos += 1
                 return accum + st
             elif st.strip() == "":  #handle indentation
+                pos += 1
                 continue
             else:
                 accum += st
+                pos += 1
         return accum
+
+    def peak_rest_tokens(self) -> list[str]:
+        """Returns the rest of the tokens without altering the Fakerator."""
+        return self.tokens[self.position:]
 
 
 def parse(tokens: list[str]) -> tuple[int, MainScope | str]:
@@ -112,13 +140,13 @@ def parse(tokens: list[str]) -> tuple[int, MainScope | str]:
         return (res[0], res[1])
 
     # unreachable
-    return (ParseError.BigBad, "big bad things happened, reached unreachable point")
+    return (ParseError.BigBad, "big bad things happened, reached unreachable point after recursive parsing")
 
 
 def parse_modules(it: Fakerator, imports: list[Import], includes: list[Include]) -> tuple[int, MainScope | str]:
     """Parses module imports and includes."""
     while True:
-        line = it.peak_line()[:-1]
+        line = it.peak_line_tokens()[:-1]
         print(line)
         if len(line) < 2:
             break
@@ -190,15 +218,34 @@ def parse_modules(it: Fakerator, imports: list[Import], includes: list[Include])
         else:
             includes.append(Include(module_name))
         
+        #print("here", it.peak_rest_tokens())
         it.get_line()  #consume the next line
 
     # unreachable
+    #return (ParseError.BigBad, "big bad things happened, reached unreachable point while parsing modules")
     return (ParseError.Ok, "")
 
 
 def parse_recursive(it: Fakerator, level: int) -> tuple[int, Scope | str]:
     """Recursive implementation of parsing."""
     scope = Scope(level, [])
+    #print("in recursive")
+    #print(f"level: {level}")
+    #print(it.peak_line_tokens())
+    #print(it.peak_line_str())
+
+    mode: int = 1  #start at default mode
+    while True:
+        match mode:
+            case Mode.Scope:  #looking for the next course of action
+                print("made it here correctly")
+                print(it.peak_rest_tokens())
+                pass
+            case _:
+                return (ParseError.BigBad, "big bad things happened, reached unreachable point while recursively parsing")
+        break
+
+
     return (0, scope)
 
 

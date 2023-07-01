@@ -198,13 +198,18 @@ ASSIGNMENT
 
 
 @dataclass
+class PlaceholderExpression(Expression):
+    """DEBUGGING ONLY"""
+
+
+@dataclass
 class Variable(Expression):
     """Class for variables."""
     name: str
 
 
 @dataclass
-class TypedVariable(Expression):
+class TypedVariable(Variable):
     """Class for typed variables (optional for assignments if type can be inferenced, or for parameters)"""
     var_type: str
 
@@ -223,7 +228,7 @@ class Assignment(Statement):
 @dataclass
 class FunctionAssignment(Assignment):
     """Assign a function to a variable."""
-    var: TypedVariable 
+    var: Variable | TypedVariable 
     parameters: AssignmentTuple
     value: Scope
 

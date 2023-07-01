@@ -11,6 +11,8 @@ class ParseError(IntEnum):
     BadIndentation = 1
     BadImport = 2
     BadInclude = 3
+    WeirdScope = 4
+    BadSyntax = 5
 
 class Mode(IntEnum):
     FindImports = 0
@@ -132,7 +134,7 @@ def parse(tokens: list[str]) -> tuple[int, MainScope | str]:
         return (res[0], res[1])  #found an error
 
     #handle recursive scopes here
-    res = parse_recursive(it, 0)
+    res = parse_recursive(it)
     if res[0] == 0 and isinstance(res[1], Scope):
         main = MainScope(res[1].level, res[1].instructions, imports, includes)
         return (ParseError.Ok, main)
@@ -147,7 +149,6 @@ def parse_modules(it: Fakerator, imports: list[Import], includes: list[Include])
     """Parses module imports and includes."""
     while True:
         line = it.peak_line_tokens()[:-1]
-        print(line)
         if len(line) < 2:
             break
 
@@ -226,20 +227,53 @@ def parse_modules(it: Fakerator, imports: list[Import], includes: list[Include])
     return (ParseError.Ok, "")
 
 
-def parse_recursive(it: Fakerator, level: int) -> tuple[int, Scope | str]:
+def parse_recursive(it: Fakerator) -> tuple[int, Scope | str]:
     """Recursive implementation of parsing."""
-    scope = Scope(level, [])
+    line = it.peak_line_tokens()
+    if len(line) == 0:
+        return (ParseError.WeirdScope, "ran into some strange scoping problems")
+    scope = Scope(len(line[0]), [])
     #print("in recursive")
     #print(f"level: {level}")
     #print(it.peak_line_tokens())
     #print(it.peak_line_str())
 
-    mode: int = 1  #start at default mode
+    mode: int = Mode.Scope  #start at default mode
     while True:
+        line = it.peak_line_tokens()
         match mode:
-            case Mode.Scope:  #looking for the next course of action
-                print("made it here correctly")
-                print(it.peak_rest_tokens())
+            case Mode.Scope:  #looking for the next course of action, no current action
+                #print("made it here correctly")
+                #print(it.peak_rest_tokens())
+                if len(line[0]) != scope.level:
+                    return (ParseError.BadIndentation, "detected an invalid sudden change of indentation")
+                elif len(line) > 3 and line[1] == "let":  #declaration
+                    if line[3] == ':': #value declaration
+                        scope.instructions.append(ValueAssignment(TypedVariable(line[2], line[4]), PlaceholderExpression()))  #DEBUG, need to recursively deduce statement
+                    elif line[3] == '(':  #function declaration   )
+                        scope.instructions.append(FunctionAssignment(Variable(line[2]), AssignmentTuple([]), Scope(len(line[0]), [])))  #DEBUG, need to find type
+                    else:
+                        return (ParseError.BadSyntax, "invalid syntax after a 'let' statement")
+                #elif line[1] == "if":
+                #    pass
+                #elif line[1] == "elif":
+                #    pass
+                #elif line[1] == "else":
+                #    pass
+                #elif line[1] == "while":
+                #    pass
+                #elif line[1] == "struct":
+                #    pass
+                #elif line[1] == "match":
+                #    pass
+                elif line[1] == "import" or line[1] == "include":
+                    return (ParseError.BadSyntax, "invalid syntax, import and include statements should be at the top of the file")
+                elif len(line) > 2 and line[2] == "=":  #assignment
+                    pass
+                else:  #expression
+                    pass
+
+
                 pass
             case _:
                 return (ParseError.BigBad, "big bad things happened, reached unreachable point while recursively parsing")

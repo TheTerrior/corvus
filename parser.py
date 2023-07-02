@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import Iterator
 from enum import IntEnum
 from ast_nodes import *
+from tools import *
 import tokenizer
 
 
@@ -227,6 +228,11 @@ def parse_modules(it: Fakerator, imports: list[Import], includes: list[Include])
     return (ParseError.Ok, "")
 
 
+def parse_expression(tokens: list[str]) -> Expression:
+    """Parses an expression into a tree."""
+    return PlaceholderExpression()
+
+
 def parse_recursive(it: Fakerator) -> tuple[int, Scope | str]:
     """Recursive implementation of parsing."""
     line = it.peak_line_tokens()
@@ -247,13 +253,34 @@ def parse_recursive(it: Fakerator) -> tuple[int, Scope | str]:
                 #print(it.peak_rest_tokens())
                 if len(line[0]) != scope.level:
                     return (ParseError.BadIndentation, "detected an invalid sudden change of indentation")
+
                 elif len(line) > 3 and line[1] == "let":  #declaration
-                    if line[3] == ':': #value declaration
-                        scope.instructions.append(ValueAssignment(TypedVariable(line[2], line[4]), PlaceholderExpression()))  #DEBUG, need to recursively deduce statement
-                    elif line[3] == '(':  #function declaration   )
-                        scope.instructions.append(FunctionAssignment(Variable(line[2]), AssignmentTuple([]), Scope(len(line[0]), [])))  #DEBUG, need to find type
+                    if line[3] == ':':  #value declaration with type, let x: int = 5
+                        if len(line) < 5:  #incorrect syntax
+                            return (ParseError.BadSyntax, "invalid syntax when declaring a variable")
+
+                        if len(line) > 5 and line[5] == '=':  #declaration with assignment
+                            expression_tree = parse_expression(line[6:])
+                            scope.instructions.append(ValueAssignment(TypedVariable(line[2], line[4]), expression_tree))  #recursively deduce assignment
+                            it.get_line()
+                        elif len(line) == 5: #declaration without assignment
+                            scope.instructions.append(ValueAssignment(TypedVariable(line[2], line[4]), PlaceholderExpression()))  #variable will be assigned later
+                            it.get_line()
+                        else:
+                            return (ParseError.BadSyntax, "invalid syntax when declaring a variable")
+
+                    elif line[3] == '=':  #value declaration with type inference, let x = 5
+                        expression_tree = parse_expression(line[4:])
+                        scope.instructions.append(ValueAssignment(Variable(line[2]), expression_tree))  #recursively deduce statement
+                        it.get_line()
+
+                    elif line[3] == '(':  #function declaration ), let x(y: int, z: int): int
+                        loc = find_parentheses_pair_tokens(line, 3)  #type declarations can have parentheses, i.e. tuples
+                        scope.instructions.append(FunctionAssignment(Variable(line[2]), AssignmentTuple([]), Scope(len(line[0]), [])))  #TODO, need to find type
+
                     else:
                         return (ParseError.BadSyntax, "invalid syntax after a 'let' statement")
+
                 #elif line[1] == "if":
                 #    pass
                 #elif line[1] == "elif":

@@ -79,7 +79,9 @@ VALUES
 @dataclass
 class CompoundExpression(Expression):
     """An expression resultant from other expressions."""
-    expressions: list[Expression | Operator]
+    #expressions: list[Expression | Operator]
+    operator: Operator
+    operands: list[Expression]
 
 
 @dataclass
@@ -199,7 +201,7 @@ ASSIGNMENT
 
 @dataclass
 class PlaceholderExpression(Expression):
-    """DEBUGGING ONLY"""
+    """For development, and for uninitialized variables."""
 
 
 @dataclass

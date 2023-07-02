@@ -49,7 +49,8 @@ let lis1 = [
     "there"
 ]
 
-x = 3
+let x: int = 3
+x = 5
 
 
 

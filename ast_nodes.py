@@ -217,8 +217,14 @@ class TypedVariable(Variable):
 
 
 @dataclass
+class ParameterTuple:
+    """Holds a list of parameters."""
+    variables: list[TypedVariable]
+
+
+@dataclass
 class AssignmentTuple:
-    """Holds a list of parameters or variables for assignment."""
+    """Holds a list of variables for assignment."""
     variables: list[Variable | TypedVariable]
 
 
@@ -231,7 +237,7 @@ class Assignment(Statement):
 class FunctionAssignment(Assignment):
     """Assign a function to a variable."""
     var: Variable | TypedVariable 
-    parameters: AssignmentTuple
+    parameters: ParameterTuple
     value: Scope
 
 

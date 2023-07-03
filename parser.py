@@ -228,9 +228,14 @@ def parse_modules(it: Fakerator, imports: list[Import], includes: list[Include])
     return (ParseError.Ok, "")
 
 
-def parse_expression(tokens: list[str]) -> Expression:
+def parse_expression(tokens: list[str]) -> tuple[int, Expression | str]:
     """Parses an expression into a tree."""
-    return PlaceholderExpression()
+    return (ParseError.Ok, PlaceholderExpression())
+
+
+def parse_parameters(tokens: list[str]) -> tuple[int, list[TypedVariable]]:  #Variable is only here to make the syntax highlighter happy
+    """Parses a set of parameters."""
+    return (ParseError.Ok, [])
 
 
 def parse_recursive(it: Fakerator) -> tuple[int, Scope | str]:
@@ -260,8 +265,10 @@ def parse_recursive(it: Fakerator) -> tuple[int, Scope | str]:
                             return (ParseError.BadSyntax, "invalid syntax when declaring a variable")
 
                         if len(line) > 5 and line[5] == '=':  #declaration with assignment
-                            expression_tree = parse_expression(line[6:])
-                            scope.instructions.append(ValueAssignment(TypedVariable(line[2], line[4]), expression_tree))  #recursively deduce assignment
+                            expression_tree_res = parse_expression(line[6:])  #recursively deduce assignment
+                            if isinstance(expression_tree_res[1], str):
+                                return (expression_tree_res[0], expression_tree_res[1])  #error while parsing expression
+                            scope.instructions.append(ValueAssignment(TypedVariable(line[2], line[4]), expression_tree_res[1]))
                             it.get_line()
                         elif len(line) == 5: #declaration without assignment
                             scope.instructions.append(ValueAssignment(TypedVariable(line[2], line[4]), PlaceholderExpression()))  #variable will be assigned later
@@ -270,13 +277,34 @@ def parse_recursive(it: Fakerator) -> tuple[int, Scope | str]:
                             return (ParseError.BadSyntax, "invalid syntax when declaring a variable")
 
                     elif line[3] == '=':  #value declaration with type inference, let x = 5
-                        expression_tree = parse_expression(line[4:])
-                        scope.instructions.append(ValueAssignment(Variable(line[2]), expression_tree))  #recursively deduce statement
+                        expression_tree_res = parse_expression(line[4:])  #recursively deduce assignment
+                        if isinstance(expression_tree_res[1], str):
+                            return (expression_tree_res[0], expression_tree_res[1])  #error while parsing expression
+                        scope.instructions.append(ValueAssignment(Variable(line[2]), expression_tree_res[1]))  #type inference will be done during semantic analysis
                         it.get_line()
 
                     elif line[3] == '(':  #function declaration ), let x(y: int, z: int): int
                         loc = find_parentheses_pair_tokens(line, 3)  #type declarations can have parentheses, i.e. tuples
-                        scope.instructions.append(FunctionAssignment(Variable(line[2]), AssignmentTuple([]), Scope(len(line[0]), [])))  #TODO, need to find type
+                        if len(line) < loc + 4 or line[loc + 1] != ':' or line[loc + 3] != '=':
+                            return (ParseError.BadSyntax, "invalid syntax when declaring a function")
+                        func_type = line[loc + 2]
+
+                        if len(line) > loc + 4:  #one-line definition, must be an expression
+                            expression_tree_res = parse_expression(line[loc+4:])  #recursively deduce assignment
+                            if isinstance(expression_tree_res[1], str):
+                                return (expression_tree_res[0], expression_tree_res[1])  #error while parsing expression
+                            parameters_res = parse_parameters(line[4:loc-1])
+                            if isinstance(parameters_res[1], str):
+                                return (parameters_res[0], parameters_res[1])  #error while parsing expression
+                            scope.instructions.append(FunctionAssignment(Variable(line[2]), ParameterTuple(parameters_res[1]), Scope(scope.level+1, [expression_tree_res[1]])))
+                            it.get_line()
+                        else:  #multiple-line definition, recursion
+                            pass
+
+
+
+
+                        #scope.instructions.append(FunctionAssignment(Variable(line[2]), AssignmentTuple([]), Scope(len(line[0]), [])))
 
                     else:
                         return (ParseError.BadSyntax, "invalid syntax after a 'let' statement")

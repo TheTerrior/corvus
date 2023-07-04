@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from re import T
 from typing import Iterator
 from enum import IntEnum
 from ast_nodes import *
@@ -14,6 +15,9 @@ class ParseError(IntEnum):
     BadInclude = 3
     WeirdScope = 4
     BadSyntax = 5
+    BadGlobal = 6
+    BadModuleName = 7
+    BadVariableName = 8
 
 class Mode(IntEnum):
     FindImports = 0
@@ -27,7 +31,7 @@ class Fakerator:
     position: int
 
     def get_line(self) -> list[str]:
-        """Returns the next line in the iterator."""
+        """Returns the next line in the iterator, mostly used to consume the next line after peaking."""
         accum = []
 
         while self.position < len(self.tokens) - 1:
@@ -46,7 +50,7 @@ class Fakerator:
 
 
     def get_line_str(self) -> str:
-        """Returns the next line in the iterator as a string."""
+        """Returns the next line in the iterator (not including indentation) as a string."""
         accum = ""
 
         while self.position < len(self.tokens) - 1:
@@ -63,7 +67,7 @@ class Fakerator:
         return accum
 
     def peak_line_tokens(self) -> list[str]:
-        """Returns the next line in the iterator without altering the Fakerator."""
+        """Returns the next line in the iterator (not including indentation) without altering the Fakerator."""
         accum = []
         pos = self.position
 
@@ -98,7 +102,7 @@ class Fakerator:
         return accum
 
     def peak_line_str(self) -> str:
-        """Returns the next line in the iterator as a string without altering the Fakerator."""
+        """Returns the next line in the iterator (not including indentation) as a string without altering the Fakerator."""
         accum = ""
         pos = self.position
 
@@ -134,10 +138,16 @@ def parse(tokens: list[str]) -> tuple[int, MainScope | str]:
     if res[0] != ParseError.Ok:
         return (res[0], res[1])  #found an error
 
+    #handle global declarations here
+    globals: list[TypedVariable] = []
+    res = parse_globals(it, globals)
+    if res[0] != ParseError.Ok:
+        return (res[0], res[1])  #found an error
+
     #handle recursive scopes here
     res = parse_recursive(it)
     if res[0] == 0 and isinstance(res[1], Scope):
-        main = MainScope(res[1].level, res[1].instructions, imports, includes)
+        main = MainScope(res[1].level, res[1].instructions, imports, includes, globals)
         return (ParseError.Ok, main)
     elif isinstance(res[1], str):  #found an error
         return (res[0], res[1])
@@ -150,16 +160,8 @@ def parse_modules(it: Fakerator, imports: list[Import], includes: list[Include])
     """Parses module imports and includes."""
     while True:
         line = it.peak_line_tokens()[:-1]
-        if len(line) < 2:
+        if len(line) < 2 or line[0] not in ["import", "include"]:
             break
-
-        match line[0]:
-            case "import":
-                pass
-            case "include":
-                pass
-            case _:
-                break
 
         # import math::pi  //length 5
         # import random    //length 2
@@ -170,19 +172,19 @@ def parse_modules(it: Fakerator, imports: list[Import], includes: list[Include])
         # ensure correct length
         if (len(line) - 2) % 3 != 0:
             if line[0] == "import":
-                return (ParseError.BadImport, "")
+                return (ParseError.BadImport, "Incorrect syntax for an import statement")
             else:
-                return (ParseError.BadInclude, "")
+                return (ParseError.BadInclude, "Incorrect syntax for an include statement")
         
         # ensure first module name is valid
         res = True
         for char in line[1]:
-            res = True and char not in [tokenizer.grouping_symbols, tokenizer.operator_symbols, tokenizer.enclosing_symbols]
-            if not res:
+            if char in [tokenizer.grouping_symbols, tokenizer.operator_symbols, tokenizer.enclosing_symbols]:
+                res = False
                 break
 
         if not res:  #invalid token found for a module name
-            return (ParseError.BadImport, "")
+            return (ParseError.BadModuleName, "Attempted to import module with an invalid name")
         else:
             module_name.append(line[1])
 
@@ -226,6 +228,46 @@ def parse_modules(it: Fakerator, imports: list[Import], includes: list[Include])
     # unreachable
     #return (ParseError.BigBad, "big bad things happened, reached unreachable point while parsing modules")
     return (ParseError.Ok, "")
+
+
+def parse_globals(it: Fakerator, globals: list[TypedVariable]) -> tuple[int, str]:
+    """Parses module imports and includes."""
+    while True:
+        line = it.peak_line_tokens()[:-1]
+        if len(line) < 2 or line[1] != "global":  #global x: int, stop iterating when we don't run into a global statement
+            break
+
+        #if line[0] != "global"
+
+        # import math::pi  //length 5
+        # import random    //length 2
+        # import example::examplething::finallythis   //length 8
+
+        # ensure correct length
+        if len(line) != 4 or line[2] != ":":
+            return (ParseError.BadGlobal, "Incorrect syntax for a global declaration")
+        
+        # ensure variable name and type is valid
+        res = True
+        for char in (line[1] + line[3]):
+            if char in [tokenizer.grouping_symbols, tokenizer.operator_symbols, tokenizer.enclosing_symbols]:
+                res = False
+                break
+
+        if not res:  #invalid token found for a module name
+            return (ParseError.BadVariableName, "Tried to utilize a variable or type with an invalid name")
+
+        # passed all the verification checks, convert into usable node
+        if line[0] == "import":
+            globals.append(TypedVariable(line[1], line[3]))
+        
+        #print("here", it.peak_rest_tokens())
+        it.get_line()  #consume the next line
+
+    # unreachable
+    #return (ParseError.BigBad, "big bad things happened, reached unreachable point while parsing modules")
+    return (ParseError.Ok, "")
+
 
 
 def parse_expression(tokens: list[str]) -> tuple[int, Expression | str]:
@@ -299,7 +341,10 @@ def parse_recursive(it: Fakerator) -> tuple[int, Scope | str]:
                             scope.instructions.append(FunctionAssignment(Variable(line[2]), ParameterTuple(parameters_res[1]), Scope(scope.level+1, [expression_tree_res[1]])))
                             it.get_line()
                         else:  #multiple-line definition, recursion
-                            pass
+                            it.get_line()
+                            res = parse_recursive(it)
+                            if isinstance(res[1], str):  #error
+                                return (res[0], res[1])
 
 
 

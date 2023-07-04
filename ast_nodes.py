@@ -61,13 +61,6 @@ class Include(Module):
     """Includes a local file or module."""
 
 
-@dataclass
-class MainScope(Scope):
-    """Outer container for the AST."""
-    imports: list[Import]
-    includes: list[Include]
-
-
 
 '''
 
@@ -261,6 +254,22 @@ class Pass(Statement):
 @dataclass
 class Break(Statement):
     """A break statement."""
+
+
+
+'''
+
+AAAAAAAAAAAAAAAA
+
+'''
+
+
+@dataclass
+class MainScope(Scope):
+    """Outer container for the AST."""
+    imports: list[Import]
+    includes: list[Include]
+    globals: list[TypedVariable]
 
 
 

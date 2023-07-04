@@ -15,6 +15,9 @@ include test::pica
 
 import math::pi
 
+
+global test_global: int
+
 // normal function
 let x(y: int, z: int): int = //end of line comment
     y+z
@@ -51,6 +54,21 @@ let lis1 = [
 
 let x: int = 3
 x = 5
+
+let global_test_func() =
+    let x: int = 3
+    print(x)
+
+    take x
+    print(x)
+    x = 5
+    print(x)
+
+    let x: int = 6
+    print(x)
+
+    take x
+    print(x)
 
 
 

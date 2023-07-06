@@ -37,13 +37,13 @@ def main() -> None:
 
             print("Parsing...")
             ast = parser.parse(tokens)
-            #print(ast)
 
             if isinstance(ast[1], str):
                 print(ast[1])
                 return
-            elif isinstance(ast[1], parser.MainScope):
-                parser.verify_ast(ast[1])
+
+            print(ast[1])
+            parser.verify_ast(ast[1])
 
         case "nm":
             print("error: language not yet implemented")

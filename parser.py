@@ -145,12 +145,12 @@ def parse(tokens: list[str]) -> tuple[int, MainScope | str]:
         return (res[0], res[1])  #found an error
 
     #handle recursive scopes here
-    res = parse_recursive(it)
-    if res[0] == 0 and isinstance(res[1], Scope):
-        main = MainScope(res[1].level, res[1].instructions, imports, includes, globals)
+    rec_res = parse_recursive(it)
+    if res[0] == 0 and isinstance(rec_res[1], Scope):
+        main = MainScope(0, rec_res[1].instructions, imports, includes, globals)
         return (ParseError.Ok, main)
-    elif isinstance(res[1], str):  #found an error
-        return (res[0], res[1])
+    elif isinstance(rec_res[1], str):  #found an error
+        return (rec_res[0], rec_res[1])
 
     # unreachable
     return (ParseError.BigBad, "big bad things happened, reached unreachable point after recursive parsing")
@@ -234,7 +234,7 @@ def parse_globals(it: Fakerator, globals: list[TypedVariable]) -> tuple[int, str
     """Parses module imports and includes."""
     while True:
         line = it.peak_line_tokens()[:-1]
-        if len(line) < 2 or line[1] != "global":  #global x: int, stop iterating when we don't run into a global statement
+        if len(line) < 2 or line[0] != "global":  #global x: int, stop iterating when we don't run into a global statement
             break
 
         # import math::pi  //length 5
@@ -256,7 +256,7 @@ def parse_globals(it: Fakerator, globals: list[TypedVariable]) -> tuple[int, str
             return (ParseError.BadVariableName, "Tried to utilize a variable or type with an invalid name")
 
         # passed all the verification checks, convert into usable node
-        if line[0] == "import":
+        if line[0] == "global":
             globals.append(TypedVariable(line[1], line[3]))
         
         #print("here", it.peak_rest_tokens())
@@ -271,27 +271,39 @@ def parse_expression(tokens: list[str]) -> tuple[int, Expression | str]:  #TODO
     return (ParseError.Ok, PlaceholderExpression())
 
 
-def parse_parameters(tokens: list[str]) -> tuple[int, list[TypedVariable]]:  #TODO, Variable is only here to make the syntax highlighter happy
+def parse_parameters(tokens: list[str]) -> tuple[int, list[TypedVariable] | str]:  #TODO
     """Parses a set of parameters."""
-    return (ParseError.Ok, [])
+    variables: list[TypedVariable] = []
+    pos = 0
+    while pos < len(tokens):
+        if not (tokens[pos+1] == ':' and (pos+3 >= len(tokens) or tokens[pos+3] == ',')):
+            return (ParseError.BadSyntax, "Invalid parameter syntax")
+        variables.append(TypedVariable(tokens[pos], tokens[pos+2]))
+        pos += 4
+    return (ParseError.Ok, variables)
 
 
 def parse_recursive(it: Fakerator) -> tuple[int, Scope | str]:
     """Recursive implementation of parsing."""
-    line = it.peak_line_tokens()
+    line = it.peak_line_tokens_indentation()
+    print(f"line: {line}")
     if len(line) == 0:
         return (ParseError.WeirdScope, "ran into some strange scoping problems")
     scope = Scope(len(line[0]), [])
 
     mode: int = Mode.Scope  #start at default mode
     while True:
-        line = it.peak_line_tokens()
+        line = it.peak_line_tokens_indentation()
         match mode:
             case Mode.Scope:  #looking for the next course of action, no current action
+                print(line)
                 if len(line[0]) != scope.level:
                     return (ParseError.BadIndentation, "detected an invalid sudden change of indentation")
 
-                elif len(line) > 3 and line[1] == "let":  #declaration
+                elif line[1] == "let":  #declaration
+                    if len(line) < 4:  #for now blank declarations with type inference are disallowed: let x
+                        return (ParseError.BadSyntax, "invalid syntax when declaring a variable")
+
                     if line[3] == ':':  #value declaration with type, let x: int = 5
                         if len(line) < 5:  #incorrect syntax
                             return (ParseError.BadSyntax, "invalid syntax when declaring a variable")
@@ -317,6 +329,9 @@ def parse_recursive(it: Fakerator) -> tuple[int, Scope | str]:
                         scope.instructions.append(ValueAssignment(Variable(line[2]), expression_tree_res[1]))  #type inference will be done during semantic analysis
                         it.get_line()
 
+                    #elif line[2] == '(':  #) assignment tuple, TODO
+                    #    pass
+
                     elif line[3] == '(':  #function declaration ), let x(y: int, z: int): int =, let x() =
                         loc = find_parentheses_pair_tokens(line, 3)  #type declarations can have parentheses, i.e. tuples
                         if loc == -1 or len(line) < loc + 2:
@@ -328,7 +343,7 @@ def parse_recursive(it: Fakerator) -> tuple[int, Scope | str]:
                                 return (ParseError.BadSyntax, "invalid syntax when declaring a function")
                             func_type = line[loc + 2]
 
-                            parameters_res = parse_parameters(line[4:loc-1])
+                            parameters_res = parse_parameters(line[4:loc])
                             if isinstance(parameters_res[1], str):
                                 return (parameters_res[0], parameters_res[1])  #error while parsing expression
 
@@ -352,7 +367,7 @@ def parse_recursive(it: Fakerator) -> tuple[int, Scope | str]:
                             if line[loc + 1] != '=':
                                 return (ParseError.BadSyntax, "invalid syntax when declaring a function")
 
-                            parameters_res = parse_parameters(line[4:loc-1])
+                            parameters_res = parse_parameters(line[4:loc])
                             if isinstance(parameters_res[1], str):
                                 return (parameters_res[0], parameters_res[1])  #error while parsing expression
 
@@ -375,18 +390,8 @@ def parse_recursive(it: Fakerator) -> tuple[int, Scope | str]:
                     else:
                         return (ParseError.BadSyntax, "invalid syntax after a 'let' statement")
 
-                #elif line[1] == "if":
-                #    pass
-                #elif line[1] == "elif":
-                #    pass
-                #elif line[1] == "else":
-                #    pass
-                #elif line[1] == "while":
-                #    pass
-                #elif line[1] == "struct":
-                #    pass
-                #elif line[1] == "match":
-                #    pass
+                elif line[1] == "drop":
+                    pass
                 elif line[1] == "import" or line[1] == "include":
                     return (ParseError.BadSyntax, "invalid syntax, import and include statements should be at the top of the file")
                 elif line[1] == "global":
@@ -398,11 +403,28 @@ def parse_recursive(it: Fakerator) -> tuple[int, Scope | str]:
                         return (expression_tree_res[0], expression_tree_res[1])  #error while parsing expression
                     scope.instructions.append(ValueAssignment(Variable(line[1]), expression_tree_res[1]))
                     pass
+                # have an elif case here that detects tuple assignments, first need to find an opening parentheses, closing, then equal operator right after, TODO
                 else:  #expression
                     expression_tree_res = parse_expression(line[1:])  #recursively deduce assignment
                     if isinstance(expression_tree_res[1], str):
                         return (expression_tree_res[0], expression_tree_res[1])  #error while parsing expression
                     scope.instructions.append(expression_tree_res[1])  #append the expression to the scope
+
+                '''
+                not sure what's happening with indentation issues, but here's future things to implement:
+                    elif line[1] == "if":                                                                                 
+                        pass                                                                                              
+                    elif line[1] == "elif":                                                                               
+                        pass                                                                                              
+                    elif line[1] == "else":                                                                               
+                        pass                                                                                              
+                    elif line[1] == "while":                                                                              
+                        pass                                                                                              
+                    elif line[1] == "struct":                                                                             
+                        pass                                                                                              
+                    elif line[1] == "match":                                                                              
+                        pass
+                '''
 
             case _:
                 return (ParseError.BigBad, "big bad things happened, reached unreachable point while recursively parsing")

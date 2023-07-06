@@ -70,6 +70,8 @@ let global_test_func() =
     take x
     print(x)
 
+    drop x
+
 
 
 

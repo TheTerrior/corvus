@@ -247,6 +247,14 @@ class ValueAssignment(Assignment):
     value: Expression
 
 
+
+'''
+
+STATEMENTS
+
+'''
+
+
 @dataclass
 class Return(Statement):
     """A return statement."""
@@ -260,6 +268,18 @@ class Pass(Statement):
 @dataclass
 class Break(Statement):
     """A break statement."""
+
+
+@dataclass
+class Take(Statement):
+    """A take statement."""
+    variables: list[Variable]
+
+
+@dataclass
+class Drop(Statement):
+    """A drop statement."""
+    variables: list[Variable]
 
 
 
@@ -276,6 +296,7 @@ class MainScope(Scope):
     imports: list[Import]
     includes: list[Include]
     globals: list[TypedVariable]
+
 
 
 '''

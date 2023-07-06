@@ -237,8 +237,6 @@ def parse_globals(it: Fakerator, globals: list[TypedVariable]) -> tuple[int, str
         if len(line) < 2 or line[1] != "global":  #global x: int, stop iterating when we don't run into a global statement
             break
 
-        #if line[0] != "global"
-
         # import math::pi  //length 5
         # import random    //length 2
         # import example::examplething::finallythis   //length 8
@@ -264,18 +262,16 @@ def parse_globals(it: Fakerator, globals: list[TypedVariable]) -> tuple[int, str
         #print("here", it.peak_rest_tokens())
         it.get_line()  #consume the next line
 
-    # unreachable
-    #return (ParseError.BigBad, "big bad things happened, reached unreachable point while parsing modules")
     return (ParseError.Ok, "")
 
 
 
-def parse_expression(tokens: list[str]) -> tuple[int, Expression | str]:
+def parse_expression(tokens: list[str]) -> tuple[int, Expression | str]:  #TODO
     """Parses an expression into a tree."""
     return (ParseError.Ok, PlaceholderExpression())
 
 
-def parse_parameters(tokens: list[str]) -> tuple[int, list[TypedVariable]]:  #Variable is only here to make the syntax highlighter happy
+def parse_parameters(tokens: list[str]) -> tuple[int, list[TypedVariable]]:  #TODO, Variable is only here to make the syntax highlighter happy
     """Parses a set of parameters."""
     return (ParseError.Ok, [])
 
@@ -286,18 +282,12 @@ def parse_recursive(it: Fakerator) -> tuple[int, Scope | str]:
     if len(line) == 0:
         return (ParseError.WeirdScope, "ran into some strange scoping problems")
     scope = Scope(len(line[0]), [])
-    #print("in recursive")
-    #print(f"level: {level}")
-    #print(it.peak_line_tokens())
-    #print(it.peak_line_str())
 
     mode: int = Mode.Scope  #start at default mode
     while True:
         line = it.peak_line_tokens()
         match mode:
             case Mode.Scope:  #looking for the next course of action, no current action
-                #print("made it here correctly")
-                #print(it.peak_rest_tokens())
                 if len(line[0]) != scope.level:
                     return (ParseError.BadIndentation, "detected an invalid sudden change of indentation")
 
@@ -310,10 +300,11 @@ def parse_recursive(it: Fakerator) -> tuple[int, Scope | str]:
                             expression_tree_res = parse_expression(line[6:])  #recursively deduce assignment
                             if isinstance(expression_tree_res[1], str):
                                 return (expression_tree_res[0], expression_tree_res[1])  #error while parsing expression
-                            scope.instructions.append(ValueAssignment(TypedVariable(line[2], line[4]), expression_tree_res[1]))
+                            scope.instructions.append(VariableDeclaration(TypedVariable(line[2], line[4])))
+                            scope.instructions.append(ValueAssignment(Variable(line[2]), expression_tree_res[1]))
                             it.get_line()
                         elif len(line) == 5: #declaration without assignment
-                            scope.instructions.append(ValueAssignment(TypedVariable(line[2], line[4]), PlaceholderExpression()))  #variable will be assigned later
+                            scope.instructions.append(VariableDeclaration(TypedVariable(line[2], line[4])))
                             it.get_line()
                         else:
                             return (ParseError.BadSyntax, "invalid syntax when declaring a variable")
@@ -322,34 +313,64 @@ def parse_recursive(it: Fakerator) -> tuple[int, Scope | str]:
                         expression_tree_res = parse_expression(line[4:])  #recursively deduce assignment
                         if isinstance(expression_tree_res[1], str):
                             return (expression_tree_res[0], expression_tree_res[1])  #error while parsing expression
+                        scope.instructions.append(VariableDeclaration(Variable(line[2])))
                         scope.instructions.append(ValueAssignment(Variable(line[2]), expression_tree_res[1]))  #type inference will be done during semantic analysis
                         it.get_line()
 
-                    elif line[3] == '(':  #function declaration ), let x(y: int, z: int): int
+                    elif line[3] == '(':  #function declaration ), let x(y: int, z: int): int =, let x() =
                         loc = find_parentheses_pair_tokens(line, 3)  #type declarations can have parentheses, i.e. tuples
-                        if len(line) < loc + 4 or line[loc + 1] != ':' or line[loc + 3] != '=':
+                        if loc == -1 or len(line) < loc + 2:
                             return (ParseError.BadSyntax, "invalid syntax when declaring a function")
-                        func_type = line[loc + 2]
 
-                        if len(line) > loc + 4:  #one-line definition, must be an expression
-                            expression_tree_res = parse_expression(line[loc+4:])  #recursively deduce assignment
-                            if isinstance(expression_tree_res[1], str):
-                                return (expression_tree_res[0], expression_tree_res[1])  #error while parsing expression
+                        #from here there are two types of functions, those with return types and those without
+                        if line[loc + 1] == ':':  #function with return type
+                            if len(line) < loc + 4 or line[loc + 1] != ':' or line[loc + 3] != '=':
+                                return (ParseError.BadSyntax, "invalid syntax when declaring a function")
+                            func_type = line[loc + 2]
+
                             parameters_res = parse_parameters(line[4:loc-1])
                             if isinstance(parameters_res[1], str):
                                 return (parameters_res[0], parameters_res[1])  #error while parsing expression
-                            scope.instructions.append(FunctionAssignment(Variable(line[2]), ParameterTuple(parameters_res[1]), Scope(scope.level+1, [expression_tree_res[1]])))
-                            it.get_line()
-                        else:  #multiple-line definition, recursion
-                            it.get_line()
-                            res = parse_recursive(it)
-                            if isinstance(res[1], str):  #error
-                                return (res[0], res[1])
 
+                            if len(line) > loc + 4:  #one-line definition, must be an expression
+                                expression_tree_res = parse_expression(line[loc+4:])  #recursively deduce assignment
+                                if isinstance(expression_tree_res[1], str):
+                                    return (expression_tree_res[0], expression_tree_res[1])  #error while parsing expression
 
+                                scope.instructions.append(VariableDeclaration(Variable(line[2])))  #will let semantic analysis figure out the type
+                                scope.instructions.append(FunctionAssignment(TypedVariable(line[2], func_type), ParameterTuple(parameters_res[1]), Scope(scope.level+1, [expression_tree_res[1]])))
+                                it.get_line()
+                            else:  #multiple-line definition, recursion
+                                it.get_line()
+                                res = parse_recursive(it)
+                                if isinstance(res[1], str):  #error
+                                    return (res[0], res[1])
+                                scope.instructions.append(VariableDeclaration(Variable(line[2])))  #will let semantic analysis figure out the type
+                                scope.instructions.append(FunctionAssignment(TypedVariable(line[2], func_type), ParameterTuple(parameters_res[1]), res[1]))
 
+                        else:  #function without return type
+                            if line[loc + 1] != '=':
+                                return (ParseError.BadSyntax, "invalid syntax when declaring a function")
 
-                        #scope.instructions.append(FunctionAssignment(Variable(line[2]), AssignmentTuple([]), Scope(len(line[0]), [])))
+                            parameters_res = parse_parameters(line[4:loc-1])
+                            if isinstance(parameters_res[1], str):
+                                return (parameters_res[0], parameters_res[1])  #error while parsing expression
+
+                            if len(line) > loc + 2:  #one-line definition, must be an expression
+                                expression_tree_res = parse_expression(line[loc+2:])  #recursively deduce assignment
+                                if isinstance(expression_tree_res[1], str):
+                                    return (expression_tree_res[0], expression_tree_res[1])  #error while parsing expression
+
+                                scope.instructions.append(VariableDeclaration(Variable(line[2])))  #will let semantic analysis figure out the type
+                                scope.instructions.append(FunctionAssignment(Variable(line[2]), ParameterTuple(parameters_res[1]), Scope(scope.level+1, [expression_tree_res[1]])))
+                                it.get_line()
+                            else:  #multiple-line definition, recursion
+                                it.get_line()
+                                res = parse_recursive(it)
+                                if isinstance(res[1], str):  #error
+                                    return (res[0], res[1])
+                                scope.instructions.append(VariableDeclaration(Variable(line[2])))  #will let semantic analysis figure out the type
+                                scope.instructions.append(FunctionAssignment(Variable(line[2]), ParameterTuple(parameters_res[1]), res[1]))
 
                     else:
                         return (ParseError.BadSyntax, "invalid syntax after a 'let' statement")
@@ -368,17 +389,24 @@ def parse_recursive(it: Fakerator) -> tuple[int, Scope | str]:
                 #    pass
                 elif line[1] == "import" or line[1] == "include":
                     return (ParseError.BadSyntax, "invalid syntax, import and include statements should be at the top of the file")
-                elif len(line) > 2 and line[2] == "=":  #assignment
+                elif line[1] == "global":
+                    return (ParseError.BadSyntax, "invalid syntax, global statements should be at the top of the file under the import statements")
+                elif len(line) > 2 and line[2] == "=":  #assignment, no declaration
+                    it.get_line()
+                    expression_tree_res = parse_expression(line[1:])  #recursively deduce assignment
+                    if isinstance(expression_tree_res[1], str):
+                        return (expression_tree_res[0], expression_tree_res[1])  #error while parsing expression
+                    scope.instructions.append(ValueAssignment(Variable(line[1]), expression_tree_res[1]))
                     pass
                 else:  #expression
-                    pass
+                    expression_tree_res = parse_expression(line[1:])  #recursively deduce assignment
+                    if isinstance(expression_tree_res[1], str):
+                        return (expression_tree_res[0], expression_tree_res[1])  #error while parsing expression
+                    scope.instructions.append(expression_tree_res[1])  #append the expression to the scope
 
-
-                pass
             case _:
                 return (ParseError.BigBad, "big bad things happened, reached unreachable point while recursively parsing")
         break
-
 
     return (0, scope)
 

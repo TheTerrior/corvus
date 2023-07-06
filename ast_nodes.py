@@ -210,6 +210,12 @@ class TypedVariable(Variable):
 
 
 @dataclass
+class VariableDeclaration(Statement):
+    """Declares or shadows a variable."""
+    variable: Variable | TypedVariable
+
+
+@dataclass
 class ParameterTuple:
     """Holds a list of parameters."""
     variables: list[TypedVariable]
@@ -237,7 +243,7 @@ class FunctionAssignment(Assignment):
 @dataclass
 class ValueAssignment(Assignment):
     """Assign a value to a variable."""
-    var: Variable | TypedVariable 
+    var: Variable
     value: Expression
 
 
@@ -270,7 +276,6 @@ class MainScope(Scope):
     imports: list[Import]
     includes: list[Include]
     globals: list[TypedVariable]
-
 
 
 '''

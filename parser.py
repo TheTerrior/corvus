@@ -268,10 +268,27 @@ def parse_globals(it: Fakerator, globals: list[TypedVariable]) -> tuple[int, str
 
 def parse_expression(tokens: list[str]) -> tuple[int, Expression | str]:  #TODO
     """Parses an expression into a tree."""
+    '''
+    Hierarchy of precedence
+
+    () []
+    . $ function_call
+    !
+    **
+    * / // %
+    + -
+    << >>
+    &
+    ^
+    |
+    < > <= >= == !=
+    &&
+    ||
+    '''
     return (ParseError.Ok, PlaceholderExpression())
 
 
-def parse_parameters(tokens: list[str]) -> tuple[int, list[TypedVariable] | str]:  #TODO
+def parse_parameters(tokens: list[str]) -> tuple[int, list[TypedVariable] | str]:
     """Parses a set of parameters."""
     variables: list[TypedVariable] = []
     pos = 0

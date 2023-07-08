@@ -285,6 +285,37 @@ def parse_expression(tokens: list[str]) -> tuple[int, Expression | str]:  #TODO
     &&
     ||
     '''
+    
+    '''
+    Example expressions:
+
+    f()
+
+    f(2,3,    4)
+
+    [ 1, 2, 3 ,4
+      4, 2,
+    ]
+
+    3.f(3, 4) * 5 $ g()
+
+    3 + 4 * 3 + (3 * g())
+
+    x + 3
+
+    (3 | y) ^ x == True
+
+    3 ** 3
+
+    3 + 4.g(3, 4)$(3.h(2))(3)   //this one is super confusing, but h takes in 4 parameters and returns a function, and g takes in 3 parameters and returns an int
+    3 + h(3, 2, 3, g(4, 3, 3))(3)  //an equivalent refactored line
+    '''
+
+    # tactic: find the lowest priority operators (while respecting parentheses) and have them be the top of the expression tree
+    while True:
+        break
+
+
     return (ParseError.Ok, PlaceholderExpression())
 
 

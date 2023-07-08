@@ -85,103 +85,103 @@ class Value(Expression):
 @dataclass
 class Bool(Value):
     """Boolean."""
-    value: bool | CompoundExpression
+    value: bool
 
 
 @dataclass
 class Int(Value):
     """Int."""
-    value: int | CompoundExpression
+    value: int
 
 
 @dataclass
 class Int8(Value):
     """Int8."""
-    value: int | CompoundExpression
+    value: int
 
 
 @dataclass
 class Int16(Value):
     """Int16."""
-    value: int | CompoundExpression
+    value: int
 
 
 @dataclass
 class Int32(Value):
     """Int32."""
-    value: int | CompoundExpression
+    value: int
 
 
 @dataclass
 class Int64(Value):
     """Int64."""
-    value: int | CompoundExpression
+    value: int
 
 
 @dataclass
 class UInt8(Value):
     """UInt8."""
-    value: int | CompoundExpression
+    value: int
 
 
 @dataclass
 class UInt16(Value):
     """UInt16."""
-    value: int | CompoundExpression
+    value: int
 
 
 @dataclass
 class UInt32(Value):
     """UInt32."""
-    value: int | CompoundExpression
+    value: int
 
 
 @dataclass
 class UInt64(Value):
     """UInt64."""
-    value: int | CompoundExpression
+    value: int
 
 
 @dataclass
 class Float32(Value):
     """Float32."""
-    value: float | CompoundExpression
+    value: float
 
 
 @dataclass
 class Float64(Value):
     """Float64."""
-    value: float | CompoundExpression
+    value: float
 
 
 @dataclass
 class Char(Value):
     """Char."""
-    value: str | CompoundExpression
+    value: str
 
 
 @dataclass
 class Rune(Value):
     """Rune."""
-    value: str | CompoundExpression
+    value: str
 
 
 @dataclass
 class String(Value):
     """String."""
-    value: str | CompoundExpression
+    value: str
 
 
 @dataclass
 class Tuple(Value):
     """Tuple."""
-    values: list[Value | CompoundExpression]
+    values: list[Expression]
 
 
 @dataclass
 class List(Value):
     """List."""
-    values: list[Value | CompoundExpression]
+    values: list[list[Expression]]  #natively supports two dimensions
 
 
 
@@ -309,24 +309,169 @@ OPERATORS
 @dataclass
 class Addition(Operator):
     """Addition."""
+    left: Expression
+    right: Expression
 
 
 @dataclass
 class Subtraction(Operator):
     """Subtraction."""
+    left: Expression
+    right: Expression
 
 
 @dataclass
 class Multiplication(Operator):
     """Multiplication."""
+    left: Expression
+    right: Expression
 
 
 @dataclass
 class Division(Operator):
     """Division."""
+    left: Expression
+    right: Expression
 
 
-#TODO modulus and other things
+@dataclass
+class Modulus(Operator):
+    """Modulus."""
+    left: Expression
+    right: Expression
+
+
+@dataclass
+class IntegerDivision(Operator):
+    """Integer division."""
+    left: Expression
+    right: Expression
+
+
+@dataclass
+class Exponent(Operator):
+    """Exponent."""
+    left: Expression
+    right: Expression
+
+
+@dataclass
+class Not(Operator):
+    """Not."""
+    val: Expression
+
+
+@dataclass
+class DotPipe(Operator):
+    """Dot pipe."""
+    left: Expression
+    right: Expression
+
+
+@dataclass
+class DollarPipe(Operator):
+    """Dollar pipe."""
+    left: Expression
+    right: Expression
+
+
+@dataclass
+class FunctionCall(Operator):
+    """Function call."""
+    name: Variable 
+    parameters: list[Expression] 
+
+
+@dataclass
+class And(Operator):
+    """And."""
+    left: Expression
+    right: Expression
+
+
+@dataclass
+class Or(Operator):
+    """Or."""
+    left: Expression
+    right: Expression
+
+
+@dataclass
+class BitwiseAnd(Operator):
+    """Bitwise and."""
+    left: Expression
+    right: Expression
+
+
+@dataclass
+class BitwiseOr(Operator):
+    """Bitwise or."""
+    left: Expression
+    right: Expression
+
+
+@dataclass
+class BitwiseXor(Operator):
+    """Bitwise xor."""
+    left: Expression
+    right: Expression
+
+
+@dataclass
+class LessThan(Operator):
+    """Less than."""
+    left: Expression
+    right: Expression
+
+
+@dataclass
+class GreaterThan(Operator):
+    """Greater than."""
+    left: Expression
+    right: Expression
+
+
+@dataclass
+class LessThanEqual(Operator):
+    """Less than or equal to."""
+    left: Expression
+    right: Expression
+
+
+@dataclass
+class GreaterThanEqual(Operator):
+    """Greater than or equal to."""
+    left: Expression
+    right: Expression
+
+
+@dataclass
+class Equal(Operator):
+    """Equal."""
+    left: Expression
+    right: Expression
+
+
+@dataclass
+class NotEqual(Operator):
+    """Not equal."""
+    left: Expression
+    right: Expression
+
+
+@dataclass
+class LeftShift(Operator):
+    """Left shift."""
+    val: Expression
+
+
+@dataclass
+class RightShift(Operator):
+    """Right shift."""
+    val: Expression
+
+
+
 
 
 

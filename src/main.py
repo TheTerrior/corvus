@@ -1,7 +1,6 @@
 import os
 import argparse
 import tokenizer
-import parser
 
 
 def main() -> None:
@@ -32,18 +31,19 @@ def main() -> None:
         case "pica":
 
             print("Tokenizing...")
-            tokens = tokenizer.tokenize(args["<FILE>"])
+            tokens = tokenizer.tokenize(args["<FILE>"]).unwrap()
+
             print(tokens)
 
-            print("Parsing...")
-            ast = parser.parse(tokens)
+            #print("Parsing...")
+            #ast = pica.tokenizer.parse(tokens)
 
-            if isinstance(ast[1], str):
-                print(ast[1])
-                return
+            #if isinstance(ast[1], str):
+            #    print(ast[1])
+            #    return
 
-            print(ast[1])
-            parser.verify_ast(ast[1])
+            #print(ast[1])
+            #parser.verify_ast(ast[1])
 
         case "nm":
             print("error: language not yet implemented")

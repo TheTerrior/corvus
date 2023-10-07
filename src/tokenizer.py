@@ -1,9 +1,11 @@
+import tools
+
 grouping_symbols = {"'", '"'}
 enclosing_symbols = {'(', ')', '{', '}', '[', ']'}
 operator_symbols = {'+', '-', '*', '/', '%', '=', '>', '<', '|', '&', '.', ':', '!', ',', '^', '$'}
 
 
-def tokenize(input_file: str) -> list[str]:
+def tokenize(input_file: str) -> tools.Result[list[str], str]:
     """Tokenizes the input file. All languages are tokenized the same way."""
     global grouping_symbols, enclosing_symbols, operator_symbols
 
@@ -27,16 +29,12 @@ def tokenize(input_file: str) -> list[str]:
                     case 0: #neutral case, just finding new tokens on a line
                         if c == " ": #push last token if it's not empty
                             if token != "":
-                                #tokens.append("MODE0")
                                 tokens.append(token)
                             token = ""
                         elif c == "\n": #switch mode
                             if token != "":
-                                #tokens.append("MODE0")
                                 tokens.append(token)
                             tokens.append("\n")
-                            #if len(tokens) > 3 and tokens[-2].strip() == "" and tokens[-4:-2] == tokens[-2:]: #if multiple newlines on same level
-                            #    tokens = tokens[:-2]
                             token = ""
                             mode = 1
                         elif c in grouping_symbols: #start a group
@@ -66,8 +64,6 @@ def tokenize(input_file: str) -> list[str]:
                         if c == " ": #more spaces
                             token += " "
                         elif c == "\n": #sudden end of line, throw away the current token
-                            #if len(tokens) > 3 and tokens[-2].strip() == "" and tokens[-4:-2] == tokens[-2:]: #if multiple newlines on same level
-                            #    tokens = tokens[:-2]
                             token = ""
                         elif c in grouping_symbols: #start a group
                             tokens.append(token)
@@ -100,9 +96,9 @@ def tokenize(input_file: str) -> list[str]:
                             mode = 0
                         elif c == "\n": #newline inside of a group, probably invalid syntax, change this later if wrong
                             #to further explain, we reach here if we use python-like multiline comments '''like this'''
-                            raise Exception("invalid syntax")
-                            #print("HERE")
-                            #tokens.append("#######")
+                            #return tools.Result("invalid syntax", False)
+                            return tools.err("invalid syntax")
+                           #tokens.append("#######")
                         else:
                             token += c
 
@@ -121,11 +117,10 @@ def tokenize(input_file: str) -> list[str]:
                             token = ""
                             mode = 0
 
-
         if mode in [0, 1]: #after finishing the file, we still have a token left over
             tokens.append(token)
         elif mode in [2, 4]: #should not be in these states once we finish the file
-            raise Exception("invalid syntax")
+            tools.err("invalid syntax")
 
         # double newline cleanup, O(n) but simplifies processes later, will be incorporated into main lexer later
         level = 0
@@ -140,15 +135,10 @@ def tokenize(input_file: str) -> list[str]:
                 length_const -= 2
             i += 1
 
-        # final whitespace cleanup at start and end
-        #if len(tokens) > 1 and tokens[0].strip() == '' and tokens[1] == '\n':
-        #while len(tokens) > 1 and tokens[0].strip() == '' and tokens[1] == '\n':
-        #    tokens = tokens[2:]
-
         # final whitespace cleanup, remove all useless newlines at end
         while len(tokens) > 1 and tokens[-1].strip() == '' and tokens[-2] == '\n':
             tokens = tokens[:-2]
 
-    return tokens
+    return tools.ok(tokens)
 
 

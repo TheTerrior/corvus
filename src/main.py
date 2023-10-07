@@ -1,6 +1,7 @@
 import os
 import argparse
 import tokenizer
+import pica.parser
 
 
 def main() -> None:
@@ -31,12 +32,12 @@ def main() -> None:
         case "pica":
 
             print("Tokenizing...")
-            tokens = tokenizer.tokenize(args["<FILE>"]).unwrap()
+            tokens = tokenizer.tokenize(args["<FILE>"]).unwrap() #throws any errors that exist
 
             print(tokens)
 
             #print("Parsing...")
-            #ast = pica.tokenizer.parse(tokens)
+            #ast = pica.parser.parse(tokens)
 
             #if isinstance(ast[1], str):
             #    print(ast[1])

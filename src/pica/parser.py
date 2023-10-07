@@ -1,10 +1,12 @@
-from dataclasses import dataclass
-from re import T
-from typing import Iterator
+#from dataclasses import dataclass
+#from re import T
+from typing import Iterator, Any
 from enum import IntEnum
-from ast_nodes import *
-from tools import *
-import tokenizer
+
+#import sys
+#sys.path.append("..")
+#
+#from tools import *
 
 
 class ParseError(IntEnum):
@@ -23,6 +25,10 @@ class Mode(IntEnum):
     FindImports = 0
     Scope = 1
     Definition = 2
+
+
+#def parse() -> Result[Any, str]
+
 
 
 

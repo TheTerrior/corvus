@@ -32,7 +32,7 @@ def main() -> None:
         case "amb":
 
             print("Tokenizing...")
-            tokens = tokenizer.tokenize_new(args["<FILE>"]).unwrap() #throws any errors that exist
+            tokens = tokenizer.tokenize(args["<FILE>"]).unwrap() #throws any errors that exist
 
             print(tokens)
 

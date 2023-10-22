@@ -2,8 +2,8 @@
 
 
 
-import math
-include test::pica
+use math
+import test::pica
 
 
 
@@ -13,13 +13,13 @@ include test::pica
 
 
 
-import math::pi
+use math::pi
 
 
 global test_global: int
 
 // normal function
-let x(y: int, z: int): int = //end of line comment
+fn x(y: int, z: int) int: //end of line comment
     y+z
 
 
@@ -32,9 +32,9 @@ let x(y: int, z: int): int = //end of line comment
 multi-line comment
 */
 
-let y(a: int, b: int): int = a + b
+fn y(a: int, b: int) = a + b
 
-let with_greeting(input: str): int =
+fn with_greeting(input: str) int:
     let greeting: str = "hello " + input
 
 
@@ -52,10 +52,10 @@ let lis1 = [
     "there"
 ]
 
-let x: int = 3
+var x: int = 3
 x = 5
 
-let global_test_func() =
+fn global_test_func():
     let x: int = 3
     print(x)
 

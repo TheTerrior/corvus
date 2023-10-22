@@ -1,9 +1,11 @@
 import tools
+from functools import reduce
 
 grouping_symbols = {"'", '"'}
 enclosing_symbols = {'(', ')', '{', '}', '[', ']'}
 operator_symbols = {'+', '-', '*', '/', '%', '=', '>', '<', '|', '&', '.', ':', '!', ',', '^', '$'}
 
+symbols = {'+', '-', '*', '/', '\\', '%', '=', '>', '<', '|', '&', '.', ',', ':', ';', '!', '?', '^', '$', '(', ')', '{', '}', '[', ']', '"', "'", '@', '#'}
 
 def tokenize(input_file: str) -> tools.Result[list[str], str]:
     """Tokenizes the input file. All languages are tokenized the same way."""
@@ -140,5 +142,89 @@ def tokenize(input_file: str) -> tools.Result[list[str], str]:
             tokens = tokens[:-2]
 
     return tools.ok(tokens)
+
+
+def tokenize_new(input_file: str) -> tools.Result[list[tuple[int, int, list[str]]], str]:
+    global symbols
+
+    all_tokens: list[tuple[int, int, list[str]]] = [] #holds all tokens, [line_number, indentation, tokens]
+    line_number = 0
+    in_comment = False #inside of a multiline comment
+
+    with open(input_file, "r") as file:
+        while (line := file.readline()) != "": #iterate through every line
+            tokens: list[str] = []
+            token: str = ""
+
+            # count indentation
+            counter = 0 #how many spaces there are
+            for c in line:
+                if c == ' ':
+                    counter += 1
+                else:
+                    break
+            if counter % 4 != 0: #invalid number of indents
+                return tools.err(f"invalid indentation on line {line_number}")
+            indentation = counter / 4
+            line = line.strip() #remove indentation
+
+            # remove comments
+            #loc = line.find("//")
+            #if loc != -1: #single-line comment found
+            #    line = line[:loc].strip() #remove comment
+            #for c in line:
+            #    loc_m = line.find("$$")
+            #    loc_s = line.find("//")
+            #    if loc != -1: #found one half of multiline comment
+
+            # remove comments better
+            while True:
+                if in_comment and (loc := line.find("??")) != -1: #found end to multiline comment
+                    line = line[loc+2:] #remove multiline comment
+                    in_comment = False
+                loc_m = line.find("??")
+                loc_s = line.find("//")
+                if loc_s != -1 or loc_m != -1: #found some comment, ordered purposefully to exit condition sooner
+                    if loc_m != 1 and loc_s != -1: #both exist
+                        if loc_s < loc_m: #single comment first
+                            line = line[:loc_s] #remove single-line comment
+                        else: #multi comment first
+                            sub = line[loc_m+2:] #get the end of line
+                            loc_u = sub.find("$$") #check for a multiline end
+                            if loc_u != -1: #end of multiline found
+                                line = line[:loc_m] + line[loc_u+2:] #remove multiline comment
+                            else: #multiline is multi-line
+                                in_comment = True
+                                line = line[:loc_m] #remove multiline comment
+                    elif loc_s != 1:
+                        line = line[:loc_s] #remove single-line comment
+                    else:
+                        sub = line[loc_m+2:] #get the end of line
+                        loc_u = sub.find("$$") #check for a multiline end
+                        if loc_u != -1: #end of multiline found
+                            line = line[:loc_m] + line[loc_u+2:] #remove multiline comment
+                        else: #multiline is multi-line
+                            in_comment = True
+                            line = line[:loc_m] #remove multiline comment
+                else: #no comments found
+                    break
+
+
+            # tokenize line
+            for c in line:
+                if c not in symbols: #normal symbol
+                    token += c
+                else: #reserved symbol
+                    tokens.append(token)
+                    tokens.append(c)
+                    token = ""
+
+
+            line_number += 1
+
+
+    
+
+
 
 

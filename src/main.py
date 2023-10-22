@@ -29,7 +29,7 @@ def main() -> None:
 
     extension = file[file.rfind('.')+1:]
     match extension:
-        case "ambester":
+        case "amb":
 
             print("Tokenizing...")
             tokens = tokenizer.tokenize(args["<FILE>"]).unwrap() #throws any errors that exist

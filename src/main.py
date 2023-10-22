@@ -1,7 +1,7 @@
 import os
 import argparse
 import tokenizer
-import pica.parser
+import ambester.parser
 
 
 def main() -> None:
@@ -29,7 +29,7 @@ def main() -> None:
 
     extension = file[file.rfind('.')+1:]
     match extension:
-        case "pica":
+        case "ambester":
 
             print("Tokenizing...")
             tokens = tokenizer.tokenize(args["<FILE>"]).unwrap() #throws any errors that exist
@@ -37,7 +37,7 @@ def main() -> None:
             print(tokens)
 
             #print("Parsing...")
-            #ast = pica.parser.parse(tokens)
+            #ast = ambester.parser.parse(tokens)
 
             #if isinstance(ast[1], str):
             #    print(ast[1])

@@ -1,5 +1,5 @@
 # Corvus
-Corvus is a compiler front end that will target C or Zig.
+Corvus is a compiler front end that will target Python or Go.
 ### Currently Supported Languages
 - TBA
 

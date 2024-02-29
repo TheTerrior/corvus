@@ -1,6 +1,6 @@
 mod values;
 mod tokenizer;
-mod enrich;
+mod rich_tokenizer;
 mod ast;
 
 use std::{fs, error::Error, fmt};
@@ -42,7 +42,7 @@ fn main() {
     let gb = tokenizer::tokenize_garbage_collect(&tokens);
     println!("{:?}", gb);
 
-    let enriched = enrich::enrich(&gb);
+    let enriched = rich_tokenizer::enrich(&gb);
 }
 
 

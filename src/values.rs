@@ -1,51 +1,154 @@
+use std::collections::HashSet;
 
-pub fn get_operators<'a>() -> Vec<&'a str> {
+
+//pub fn get_operators() -> Vec<Vec<&'static str>> {
+//    vec![
+//        vec!["\\", "->"],
+//        //vec!["&"], //reference
+//        //vec!["@"],
+//        vec!["!"],
+//        vec!["**"],
+//        vec!["*", "/", "%"],
+//        vec!["+", "-"],
+//        vec!["<<", ">>"],
+//        vec!["&"], //bitwise
+//        vec!["^"],
+//        vec!["|"],
+//        vec![":"],
+//        vec!["++"],
+//        vec!["==", "!=", "<", ">", "<=", ">="],
+//        vec!["&&"],
+//        vec!["||"],
+//        vec!["..", "..="],
+//        vec!["=", "+=", "-=", "*=", "/=", "%=", "&=", "|=", "^=", "<<=", ">>=", "**="],
+//    ]
+//}
+
+/// Returns a list of "sorted" self-tokenizing symbols
+pub fn get_tokenizing_symbols() -> Vec<&'static str> {
     vec![
-        "+", //numbers
-        "-", //numbers
-        "*", //numbers
-        "/", //numbers
-        "%", //numbers
-        "<", //numbers
-        ">", //numbers
-        "<=", //numbers
-        ">=", //numbers
-        "++", //numbers, lists
-        "--", //numbers
-
-        "==", //any
-        "!=", //any
-
-        "&&", //bools
-        "||", //bools
-        "!", //bools
-
-        "|", //bits, piping
-        "&", //bits, referencing
-        "^", //bits, bools
-
-        "@", //currying
-
-
-        "=", //assignment
-        "+=", //assignment
-        "-=", //assignment
-        "*=", //assignment
-        "/=", //assignment
-        "|=", //assignment
-
-        ":", //blocks, types, steps
-
-        "..", //ranges
-        "..=", //ranges
-
-        "\\", //lambda
-        "->", //lambda
+        ";",
+        ",",
+        ".",
+        "_",
+        "//",
+        "/#",
+        "\\",
+        "@",
+        ":",
+        "\"",
+        "'",
+        "(",
+        ")",
+        "[",
+        "]",
+        "{",
+        "}",
+        "->",
+        "-=",
+        "-",
+        "<<=",
+        "<<",
+        "<=",
+        "<",
+        "!=",
+        "!",
+        "**=",
+        "**",
+        "*=",
+        "*",
+        "/=",
+        "/",
+        ">>=",
+        ">>",
+        ">=",
+        ">",
+        "%=",
+        "%",
+        "++=",
+        "++",
+        "+=",
+        "+",
+        //"&&=",
+        "&&",
+        "&=",
+        "&",
+        //"||=",
+        "|>",
+        "||",
+        "|=",
+        "|",
+        "^=",
+        "^",
+        "==",
+        "=",
+        "..=",
+        "..",
     ]
 }
 
-pub fn get_keywords<'a>() -> Vec<&'a str> {
-    vec![
+
+/*
+GLOBAL OPERATOR PRECEDENCE:
+    \ ->
+    & (functions)
+    @
+    !
+    ** 
+    * / %
+    + -
+    << >>
+    &
+    ^
+    |
+    :
+    ++
+    == != < > <= >=
+    &&
+    ||
+    .. ..=
+    = += -= *= /= %= &= |= ^= <<= >>= **=
+
+*/
+
+
+/*
+OPERATOR PRECEDENCE:
+
+ints and floats:
+    ** 
+    * / % //
+    + -
+    ++ --
+    = += -= *= /= %=
+
+bits:
+    !
+    << >>
+    &
+    ^
+    |
+    = += -= &= |= ^= <<= >>=
+
+bools:
+    !
+    &
+    ^
+    |
+    == != < > <= >=
+    &&
+    ||
+    = &= |= ^=
+
+lists:
+    :
+    ++
+
+*/
+
+
+pub fn get_keywords<'a>() -> HashSet<&'a str> {
+    HashSet::from([
         "let", //define
         "var", //define
         "fn", //define
@@ -98,7 +201,7 @@ pub fn get_keywords<'a>() -> Vec<&'a str> {
 
         "struct", //algebraic types
         "enum", //algebraic types
-    ]
+    ])
 }
 
 

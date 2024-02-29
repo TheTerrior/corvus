@@ -1,5 +1,6 @@
 mod values;
 mod tokenizer;
+mod enrich;
 mod ast;
 
 use std::{fs, error::Error, fmt};

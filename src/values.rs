@@ -27,6 +27,7 @@ use std::collections::HashSet;
 /// Returns a list of "sorted" self-tokenizing symbols
 pub fn get_tokenizing_symbols() -> Vec<&'static str> {
     vec![
+        "$",
         "::",
         ";",
         ",",

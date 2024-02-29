@@ -1,6 +1,7 @@
 use crate::values::{get_keywords, get_tokenizing_symbols};
 
 
+/// Helps tokenizer keep track of current process
 enum State {
     Start,
     Floor,
@@ -12,9 +13,9 @@ enum State {
 }
 
 
+/// Take a string and perform the initial tokenization with limited processing
 pub fn tokenize(input: &str) -> Vec<String> {
-    //let enclosing = HashSet::from(["(", ")", "[", "]", "{", "}", "'", "\""]);
-    let precursors = vec![vec!['&'], vec!['@']];
+    let precursors = vec![vec!['&'], vec!['@'], vec!['$']];
     let keywords = get_keywords();
     let symbols: Vec<&str> = get_tokenizing_symbols();
     let symbols_chars: Vec<Vec<char>> = symbols
@@ -70,11 +71,14 @@ pub fn tokenize(input: &str) -> Vec<String> {
                 if buf.len() > 0 { //ensure buf exists before pushing
                     accum.push(buf);
                 }
-                let mut pushing = String::from_iter(x); //prepare to push symbol
 
-                //check certain symbols for space in front
+                //check certain symbols for space in front, precursors
+                let pushing: String;
                 if i < chars.len() - 1 && chars[i+1] != ' ' && precursors.contains(x) {
-                    pushing.insert(0, '@');
+                    //pushing.insert(0, x);
+                    pushing = String::from("@") + &String::from_iter(x); //push symbol with precursor notation
+                } else {
+                    pushing = String::from_iter(x); //push just symbol
                 }
 
                 accum.push(pushing);
@@ -93,8 +97,8 @@ pub fn tokenize(input: &str) -> Vec<String> {
 }
 
 
+/// Clean up generated tokens
 pub fn tokenize_garbage_collect(tokens: &Vec<String>) -> Vec<String> {
-    //let mut ret = tokens.clone();
     let mut ret = Vec::new();
     let mut ret1 = Vec::new();
     let mut state = State::Scan;
@@ -147,9 +151,9 @@ pub fn tokenize_garbage_collect(tokens: &Vec<String>) -> Vec<String> {
         i += 1;
     }
 
+    // remove repeat newlines with tabs
     i = 0;
     while i < ret.len() {
-        // remove repeat newlines with tabs
         if ret[i].starts_with("@s") {
             while i < ret.len() - 2 && ret[i+1] == "\n" && ret[i+2].starts_with("@s") {
                 i += 2;
@@ -159,7 +163,6 @@ pub fn tokenize_garbage_collect(tokens: &Vec<String>) -> Vec<String> {
 
         ret1.push(ret[i].clone());
         i += 1;
-
     }
 
     if ret1.len() > 0 && ret1[ret1.len()-1] != "\n" {

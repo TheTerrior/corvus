@@ -40,7 +40,7 @@ fn main() {
     //println!("{:?}", tokens);
 
     let gb = tokenizer::tokenize_garbage_collect(&tokens);
-    //println!("{:?}", gb);
+    println!("{:?}", gb);
 
     let enriched = enrich::enrich(&gb);
 }

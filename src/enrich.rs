@@ -1,5 +1,5 @@
 
-pub enum TokenType {
+pub enum EnrichedToken {
 
     // numbers
     Number(String), //doesn't include underscores and periods
@@ -40,8 +40,9 @@ pub enum TokenType {
     // list-like
     Char(String), //''
     String(String), //""
-    Rune(String), //$''
-    Chain(String), //$""
+    //Rune(String), //$''
+    //Chain(String), //$""
+    RuneIdentifier,
 
 
     // ranges
@@ -69,9 +70,9 @@ pub enum TokenType {
 
 
     // containers
-    Parentheses(Vec<TokenType>),
-    Bracket(Vec<TokenType>),
-    Curly(Vec<TokenType>),
+    Parentheses(Vec<EnrichedToken>),
+    Bracket(Vec<EnrichedToken>),
+    Curly(Vec<EnrichedToken>),
 
 
     // functions and stuff
@@ -147,7 +148,25 @@ pub enum TokenType {
 
 
 pub fn enrich(tokens: &Vec<String>) -> () {
-    
+    let mut ret: Vec<EnrichedToken> = Vec::new();
+
+    let mut i = 0;
+    while i < tokens.len() {
+        match tokens[i].as_str() {
+            "\n" => ret.push(EnrichedToken::Newline),
+            "@@" => ret.push(EnrichedToken::Curry),
+            "@&" => ret.push(EnrichedToken::Reference),
+            "@$" => ret.push(EnrichedToken::RuneIdentifier),
+            _ => {
+                if tokens[i].starts_with("@s") { //spacing
+
+                } else { //idk
+                    ret.push(EnrichedToken::Literal(tokens[i].clone()))
+                }
+            },
+        }
+        i += 1;
+    }
 }
 
 

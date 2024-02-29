@@ -95,13 +95,59 @@ pub enum TokenType {
     Comma,
 
 
+    // keywords
+    Let,
+    Var,
+    Fn,
+    Global,
+    Take,
+    Drop,
+    If,
+    Elif,
+    Else,
+    Match,
+    Case,
+    While,
+    For,
+    In,
+    Loop,
+    Break,
+    Continue,
+    Use,
+    Import,
+    Return,
+    Print,
+    Println,
+    Printf,
+    Map,
+    Filter,
+    Fold,
+    Reduce,
+    Struct,
+    Enum,
+    VarI8,
+    VarI16,
+    VarI32,
+    VarI64,
+    VarU8,
+    VarU16,
+    VarU32,
+    VarU64,
+    VarF32,
+    VarF64,
+    VarBool,
+    VarChar,
+    VarStr,
+    VarRune,
+    VarChain,
+
+
     Literal(String), //anything that doesn't fall into any of the other categories
 }
 
 
 pub fn enrich(tokens: &Vec<String>) -> () {
-
+    
 }
-
 
 

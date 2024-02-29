@@ -1,11 +1,14 @@
-use std::collections::HashSet;
-
 use crate::values::{get_keywords, get_tokenizing_symbols};
 
 
 enum State {
     Start,
     Floor,
+
+    Scan,
+    String,
+    Comment,
+    Multiline,
 }
 
 
@@ -51,7 +54,8 @@ pub fn tokenize(input: &str) -> Vec<String> {
 
         // try to identify an operator
         if let State::Start = state { //record all the spaces as a token
-            accum.push((0..spaces).map(|_| " ").collect::<String>());
+            //accum.push((0..spaces).map(|_| " ").collect::<String>());
+            accum.push(format!("@s{}", spaces));
             state = State::Floor;
         }
         let op_match = symbols_chars
@@ -70,7 +74,7 @@ pub fn tokenize(input: &str) -> Vec<String> {
 
                 //check certain symbols for space in front
                 if i < chars.len() - 1 && chars[i+1] != ' ' && precursors.contains(x) {
-                    pushing.push('_');
+                    pushing.insert(0, '@');
                 }
 
                 accum.push(pushing);
@@ -86,6 +90,83 @@ pub fn tokenize(input: &str) -> Vec<String> {
     }
     
     accum
+}
+
+
+pub fn tokenize_garbage_collect(tokens: &Vec<String>) -> Vec<String> {
+    //let mut ret = tokens.clone();
+    let mut ret = Vec::new();
+    let mut ret1 = Vec::new();
+    let mut state = State::Scan;
+
+    // first remove all comments
+    let mut i = 0;
+    while i < tokens.len() {
+        let cur = &tokens[i];
+
+        // remove repeat newlines
+        if cur == "\n" {
+            while i < tokens.len() - 1 && tokens[i+1] == "\n" {
+                i += 1;
+            }
+        }
+
+        // handle comments
+        match &state {
+            State::Scan => { //not currently in a special state
+                match cur.as_str() {
+                    "\"" => {
+                        state = State::String; //always push with a string
+                        ret.push(cur.clone());
+                    },
+                    "//" => state = State::Comment,
+                    "/#" => state = State::Multiline,
+                    _ => ret.push(cur.clone()),
+                }
+            },
+            State::String => { //inside of a string
+                if cur == "\"" {
+                    state = State::Scan;
+                }
+                ret.push(cur.clone());
+            },
+            State::Comment => { //inside of a comment
+                if cur == "\n" {
+                    ret.push(cur.clone());
+                    state = State::Scan;
+                }
+            },
+            State::Multiline => { //inside of a multiline comment
+                if cur == "#/" {
+                    state = State::Scan;
+                }
+            },
+            _ => unreachable!(),
+        }
+
+        i += 1;
+    }
+
+    i = 0;
+    while i < ret.len() {
+        // remove repeat newlines with tabs
+        if ret[i].starts_with("@s") {
+            while i < ret.len() - 2 && ret[i+1] == "\n" && ret[i+2].starts_with("@s") {
+                i += 2;
+            }
+            println!("{}, {}", ret[i+1], ret[i+2]);
+        }
+
+        ret1.push(ret[i].clone());
+        i += 1;
+
+    }
+
+    if ret1.len() > 0 && ret1[ret1.len()-1] != "\n" {
+        ret1.push(String::from("\n"));
+    }
+
+    ret1
 }
 
 

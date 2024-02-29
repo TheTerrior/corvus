@@ -37,6 +37,9 @@ fn main() {
     
     let tokens = tokenizer::tokenize(&input);
     println!("{:?}", tokens);
+
+    let gb = tokenizer::tokenize_garbage_collect(&tokens);
+    println!("{:?}", gb);
 }
 
 

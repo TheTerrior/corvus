@@ -28,9 +28,9 @@ fn x(y: int, z: int) int: //end of line comment
 
 
 
-/*
+/#
 multi-line comment
-*/
+#/
 
 fn y(a: int, b: int) = a + b
 

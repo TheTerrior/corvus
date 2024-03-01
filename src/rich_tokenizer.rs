@@ -1,5 +1,3 @@
-use std::error::Error;
-
 use crate::CorvusError;
 
 
@@ -154,7 +152,6 @@ pub enum RichToken {
 
 pub fn enrich(tokens: &Vec<String>) -> Result<Vec<RichToken>, CorvusError> {
     let mut ret: Vec<RichToken> = Vec::new();
-    println!("ABOUT TO ENRICH: {:?}", tokens);
 
     let mut i = 0;
     'outer: while i < tokens.len() {
@@ -289,7 +286,7 @@ pub fn enrich(tokens: &Vec<String>) -> Result<Vec<RichToken>, CorvusError> {
                 let mut accum = Vec::new();
                 let mut level = 1; //so that we don't get confused by nested enclosing tokens
 
-                while i < tokens.len()-1 { //keep finding all tokens in the parentheses
+                while i < tokens.len()-1 { //keep finding all tokens within enclosing symbols
                     if tokens[i+1] == opening { //opening symbol again
                         level += 1;
                     } else if tokens[i+1] == closing { //closing symbol
@@ -297,14 +294,25 @@ pub fn enrich(tokens: &Vec<String>) -> Result<Vec<RichToken>, CorvusError> {
                     }
                     if level == 0 {
                         let enriched = enrich(&accum)?;
-                        ret.push(RichToken::Parentheses(enriched)); //need to enrich inner tokens
-                        i += 2; //account for both parentheses
+                        //ret.push(RichToken::Parentheses(enriched)); //need to enrich inner tokens
+                        match opening { //need to enrich inner tokens and package them
+                            "(" => ret.push(RichToken::Parentheses(enriched)), //need to enrich inner tokens
+                            "{" => ret.push(RichToken::Curly(enriched)), //need to enrich inner tokens
+                            "[" => ret.push(RichToken::Bracket(enriched)), //need to enrich inner tokens
+                            _ => unreachable!(),
+                        }
+                        i += 2; //account for both end symbols
                         continue 'outer;
                     }
                     accum.push(tokens[i+1].clone());
                     i += 1;
                 }
-                return Err(CorvusError::UnmatchedParentheses); //couldn't find matching parenthesis
+                return Err(match opening { //couldn't find matching end symbol
+                    "(" => CorvusError::UnmatchedParentheses,
+                    "{" => CorvusError::UnmatchedCurlyBraces,
+                    "[" => CorvusError::UnmatchedSquareBrackets,
+                    _ => unreachable!(),
+                })
             },
 
             _ => {

@@ -43,11 +43,7 @@ fn main() {
     let input = String::from_utf8(bytes).expect("Couldn't read file correctly");
     
     let tokens = tokenizer::tokenize(&input);
-    //println!("{:?}", tokens);
-
     let gb = tokenizer::tokenize_garbage_collect(&tokens);
-    println!("{:?}", gb);
-
     let enriched = rich_tokenizer::enrich(&gb);
     println!("{:?}", enriched);
 }

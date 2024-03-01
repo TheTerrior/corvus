@@ -1,7 +1,7 @@
 mod values;
 mod tokenizer;
 mod rich_tokenizer;
-mod ast;
+mod parser;
 
 use std::{fs, error::Error, fmt};
 use clap::Parser;
@@ -44,8 +44,15 @@ fn main() {
     
     let tokens = tokenizer::tokenize(&input);
     let gb = tokenizer::tokenize_garbage_collect(&tokens);
-    let enriched = rich_tokenizer::enrich(&gb);
+    let enriched_raw = rich_tokenizer::enrich(&gb);
+    if let Err(x) = enriched_raw {
+        println!("{}", x);
+        return;
+    }
+    let enriched = enriched_raw.unwrap();
     println!("{:?}", enriched);
+
+    parser::parse(&enriched);
 }
 
 

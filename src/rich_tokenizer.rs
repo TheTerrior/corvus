@@ -144,6 +144,9 @@ pub enum RichToken {
     VarStr,
     VarRune,
     VarChain,
+    
+    True,
+    False,
 
 
     Literal(String), //anything that doesn't fall into any of the other categories
@@ -200,6 +203,8 @@ pub fn enrich(tokens: &Vec<String>) -> Result<Vec<RichToken>, CorvusError> {
             "str" => ret.push(RichToken::VarStr),
             "rune" => ret.push(RichToken::VarRune),
             "chain" => ret.push(RichToken::VarChain),
+            "true" => ret.push(RichToken::True),
+            "false" => ret.push(RichToken::False),
 
             "|>" => ret.push(RichToken::Pipe),
             "\\" => ret.push(RichToken::LambdaStart),

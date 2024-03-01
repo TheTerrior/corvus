@@ -204,6 +204,9 @@ pub fn get_keywords<'a>() -> HashSet<&'a str> {
 
         "struct", //algebraic types
         "enum", //algebraic types
+
+        "true",
+        "false",
     ])
 }
 

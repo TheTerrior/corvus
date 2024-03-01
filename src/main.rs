@@ -21,10 +21,16 @@ pub struct Args {
 #[derive(Debug, Clone)]
 pub enum CorvusError {
     FileRead,
+    NumberParse, //likely a compiler error not a user error
+    UnmatchedParentheses,
+    UnmatchedCurlyBraces,
+    UnmatchedSquareBrackets,
+    UnmatchedString,
+    UnmatchedChar,
 }
 impl fmt::Display for CorvusError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Couldn't properly read input file.")
+        write!(f, "Received error: {}", self)
     } 
 }
 impl Error for CorvusError {
@@ -43,6 +49,7 @@ fn main() {
     println!("{:?}", gb);
 
     let enriched = rich_tokenizer::enrich(&gb);
+    println!("{:?}", enriched);
 }
 
 

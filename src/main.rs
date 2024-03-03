@@ -1,6 +1,7 @@
 mod values;
 mod tokenizer;
 mod rich_tokenizer;
+mod parser_types;
 mod parser;
 
 use std::{fs, error::Error, fmt};

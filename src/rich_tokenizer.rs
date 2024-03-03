@@ -5,7 +5,7 @@ use crate::CorvusError;
 pub enum RichToken {
 
     // numbers
-    Number(String), //doesn't include underscores and periods
+    Number(String), //starts with a number
 
     Plus,
     Minus,
@@ -147,7 +147,6 @@ pub enum RichToken {
     
     True,
     False,
-
 
     Literal(String), //anything that doesn't fall into any of the other categories
 }

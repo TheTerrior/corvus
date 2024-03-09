@@ -1,4 +1,41 @@
 
+
+
+
+
+
+/// Used in type signatures
+pub enum StandardType {
+    I8,
+    I16,
+    I32,
+    I64,
+    U8,
+    U16,
+    U32,
+    U64,
+    F32,
+    F64,
+    B8,
+    B16,
+    B32,
+    B64,
+    Bool,
+    Char,
+    String,
+    Rune,
+    Chain,
+    List(Box<StandardType>), // [type]
+    Map(Box<(StandardType, StandardType)>), // <type, type>
+    Set(Box<StandardType>), // {type}
+    Tuple(Vec<StandardType>), // (type, type, ..)
+    Variable(String), //structs and enums, must include name
+    Function(Vec<StandardType>, Box<StandardType>), //parameters and return value, |type, type, .., type|
+}
+
+
+
+
 pub enum Variable {
     Variable(String),
     Index(String, Box<Expression>), //could be a list, dictionary, etc
@@ -178,7 +215,7 @@ pub enum Line {
 
 
 pub enum FuncType {
-    Standard(TypeWrapper, Vec<Line>), //return type, body
+    Full(TypeWrapper, Vec<Line>), //return type, body
     Short(Vec<Line>),
 }
 

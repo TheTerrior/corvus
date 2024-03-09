@@ -156,7 +156,8 @@ pub fn get_keywords<'a>() -> HashSet<&'a str> {
         "var", //define
         "fn", //define
 
-        "global", //globals
+        "pub",
+        "local", //globals
         "take", //globals
         "drop", //globals
 
@@ -207,6 +208,8 @@ pub fn get_keywords<'a>() -> HashSet<&'a str> {
 
         "true",
         "false",
+
+        "as", //limited type casting
     ])
 }
 

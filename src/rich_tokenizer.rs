@@ -103,7 +103,8 @@ pub enum RichToken {
     Let,
     Var,
     Fn,
-    Global,
+    Local,
+    Pub,
     Take,
     Drop,
     If,
@@ -148,6 +149,8 @@ pub enum RichToken {
     True,
     False,
 
+    As,
+
     Literal(String), //anything that doesn't fall into any of the other categories
 }
 
@@ -166,7 +169,8 @@ pub fn enrich(tokens: &Vec<String>) -> Result<Vec<RichToken>, CorvusError> {
             "let" => ret.push(RichToken::Let),
             "var" => ret.push(RichToken::Var),
             "fn" => ret.push(RichToken::Fn),
-            "global" => ret.push(RichToken::Global),
+            "local" => ret.push(RichToken::Local),
+            "pub" => ret.push(RichToken::Pub),
             "take" => ret.push(RichToken::Take),
             "drop" => ret.push(RichToken::Drop),
             "if" => ret.push(RichToken::If),
@@ -204,6 +208,7 @@ pub fn enrich(tokens: &Vec<String>) -> Result<Vec<RichToken>, CorvusError> {
             "chain" => ret.push(RichToken::VarChain),
             "true" => ret.push(RichToken::True),
             "false" => ret.push(RichToken::False),
+            "as" => ret.push(RichToken::As),
 
             "|>" => ret.push(RichToken::Pipe),
             "\\" => ret.push(RichToken::LambdaStart),

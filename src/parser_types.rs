@@ -35,75 +35,30 @@ pub enum StandardType {
 
 
 
-
-pub enum Variable {
-    Variable(String),
-    Index(String, Box<Expression>), //could be a list, dictionary, etc
-    Ref(Box<Variable>),
-    Curry(Box<Variable>),
-}
-
-
-pub struct FunctionCall {
-    name: Variable,
-    arguments: Vec<Expression>,
-}
-
-
-/// Don't inherit from this, use ValueWrapper instead
-pub enum Value {
-    Variable(Variable), //starts with alpha
-    Bool(bool), //based on rich tokenizer
-    Integer(String), //starts with int, has only ints and underscores
-    Float(String), //starts with int, has ints and underscores and decimal
-    Bits(String), //starts with 0b, has no decimals or underscores, respects rules
-    Hex(String), //starts with 0x, has no decimals or underscores, respects rules
-    Char(String), //no dollar precursor
-    String(String), //no dollar precursor
-    Rune(String), //dollar precursor
-    Chain(String), //dollar precursor
-}
-
-
-/// Don't inherit from this, use TypeWrapper instead
-pub enum BaseType {
-    VarI8,
-    VarI16,
-    VarI32,
-    VarI64,
-    VarU8,
-    VarU16,
-    VarU32,
-    VarU64,
-    VarF32,
-    VarF64,
-    VarBool,
-    VarChar,
-    VarStr,
-    VarRune,
-    VarChain,
-}
-
-
-///// Things that are operated on
-//pub enum ValueWrapper {
-//    Value(Value),
-//    Curry(Value),
-//    Ref(Value),
-//    Index(Value, Box<Expression>),
-//}
-
-
-/// Things that could fit in type declaration
-pub enum TypeWrapper {
-    BaseType(BaseType),
-    CustomType(String),
-    Ref(Box<TypeWrapper>),
-    List(Box<TypeWrapper>),
-    Tuple(Vec<TypeWrapper>),
-    Dictionary(Box<TypeWrapper>, Box<TypeWrapper>),
-    Set(Box<TypeWrapper>),
-    Array(String, Box<TypeWrapper>), //size, type
+/// Used to build expressions
+pub enum ExpressionTypes {
+    I8(String),
+    I16(String),
+    I32(String),
+    I64(String),
+    U8(String),
+    U16(String),
+    U32(String),
+    U64(String),
+    F32(String),
+    F64(String),
+    B8(String),
+    B16(String),
+    B32(String),
+    B64(String),
+    Hex(String), //may be mapped to bits or uints
+    Bool(bool),
+    Char(String),
+    String(String),
+    Rune,
+    Chain,
+    List(), //constructed with [_,_,_,] and optional last comma, TODO
+    
 }
 
 
@@ -138,21 +93,8 @@ pub enum OperationName {
     Pipe,
     Concat,
     Cons,
-}
 
-
-/// CORE
-pub enum Expression {
-    Value(Value),
-    Operation(Box<Operation>),
-    FunctionCall(FunctionCall),
-}
-
-
-pub struct Operation {
-    operation: OperationName,
-    operand0: Expression,
-    operand1: Expression,
+    Dot, //for calling methods
 }
 
 
@@ -173,21 +115,28 @@ pub enum AssignmentName {
 }
 
 
-pub enum DeclarationType {
+pub enum AssignmentType {
+    // reassignment
     None,
-    Let,
-    Var,
-    Const,
+
+    // only accessible in scope
+    Let, //immutable, assigned at run time
+    Var, //mutable
+    Const, //immutable, assigned at compile time
+
+    // accessible anywhere within file if 'taken'
+    LocalLet,
+    LocalVar,
+    LocalConst,
+
+    // accessible from any file
+    PubLet,
+    PubVar, //mutable within the file
+    PubConst,
+    //Universal, //mutable from any file
 }
 
 
-/// CORE
-pub struct Assignment {
-    declaration: DeclarationType,
-    operation: AssignmentName,
-    left: Variable,
-    right: Expression,
-}
 
 
 
@@ -198,41 +147,145 @@ pub struct Assignment {
 
 
 
-pub enum Line {
-    Assignment(Assignment),
-    Expression(Expression),
-    Continue,
-    Break,
-    Pass,
-    Return,
-    ReturnValue(Expression),
-    FunctionDef(FunctionDef),
-    Take(String),
-    Drop(String),
-    //StructDef  FOR LATER, TODO
-    //EnumDef  FOR LATER, TODO
-}
 
 
-pub enum FuncType {
-    Full(TypeWrapper, Vec<Line>), //return type, body
-    Short(Vec<Line>),
-}
 
 
-pub struct FunctionDef {
-    name: String,
-    parameters: Vec<(String, TypeWrapper)>, //name, type
-    func_parts: FuncType, //return type (optional), body
-}
+
+//pub enum Variable {
+//    Variable(String),
+//    Index(String, Box<Expression>), //could be a list, dictionary, etc
+//    Ref(Box<Variable>),
+//    Curry(Box<Variable>),
+//}
 
 
-pub struct File {
-    uses: Vec<String>, //CHANGE THIS
-    imports: Vec<String>, //CHANGE THIS
-    globals: Vec<(String, TypeWrapper)>, //name, type
-    functions: Vec<FunctionDef>,
-}
+//pub struct FunctionCall {
+//    name: Variable,
+//    arguments: Vec<Expression>,
+//}
+
+
+///// Don't inherit from this, use ValueWrapper instead
+//pub enum Value {
+//    Variable(Variable), //starts with alpha
+//    Bool(bool), //based on rich tokenizer
+//    Integer(String), //starts with int, has only ints and underscores
+//    Float(String), //starts with int, has ints and underscores and decimal
+//    Bits(String), //starts with 0b, has no decimals or underscores, respects rules
+//    Hex(String), //starts with 0x, has no decimals or underscores, respects rules
+//    Char(String), //no dollar precursor
+//    String(String), //no dollar precursor
+//    Rune(String), //dollar precursor
+//    Chain(String), //dollar precursor
+//}
+
+
+///// Don't inherit from this, use TypeWrapper instead
+//pub enum BaseType {
+//    VarI8,
+//    VarI16,
+//    VarI32,
+//    VarI64,
+//    VarU8,
+//    VarU16,
+//    VarU32,
+//    VarU64,
+//    VarF32,
+//    VarF64,
+//    VarBool,
+//    VarChar,
+//    VarStr,
+//    VarRune,
+//    VarChain,
+//}
+
+
+///// Things that are operated on
+//pub enum ValueWrapper {
+//    Value(Value),
+//    Curry(Value),
+//    Ref(Value),
+//    Index(Value, Box<Expression>),
+//}
+
+
+///// Things that could fit in type declaration
+//pub enum TypeWrapper {
+//    BaseType(BaseType),
+//    CustomType(String),
+//    Ref(Box<TypeWrapper>),
+//    List(Box<TypeWrapper>),
+//    Tuple(Vec<TypeWrapper>),
+//    Dictionary(Box<TypeWrapper>, Box<TypeWrapper>),
+//    Set(Box<TypeWrapper>),
+//    Array(String, Box<TypeWrapper>), //size, type
+//}
+
+
+
+
+///// CORE
+//pub enum Expression {
+//    Value(Value),
+//    Operation(Box<Operation>),
+//    FunctionCall(FunctionCall),
+//}
+
+
+//pub struct Operation {
+//    operation: OperationName,
+//    operand0: Expression,
+//    operand1: Expression,
+//}
+
+
+
+
+///// CORE
+//pub struct Assignment {
+//    declaration: DeclarationType,
+//    operation: AssignmentName,
+//    left: Variable,
+//    right: Expression,
+//}
+
+
+//pub enum Line {
+//    Assignment(Assignment),
+//    Expression(Expression),
+//    Continue,
+//    Break,
+//    Pass,
+//    Return,
+//    ReturnValue(Expression),
+//    FunctionDef(FunctionDef),
+//    Take(String),
+//    Drop(String),
+//    //StructDef  FOR LATER, TODO
+//    //EnumDef  FOR LATER, TODO
+//}
+
+
+//pub enum FuncType {
+//    Full(TypeWrapper, Vec<Line>), //return type, body
+//    Short(Vec<Line>),
+//}
+
+
+//pub struct FunctionDef {
+//    name: String,
+//    parameters: Vec<(String, TypeWrapper)>, //name, type
+//    func_parts: FuncType, //return type (optional), body
+//}
+
+
+//pub struct File {
+//    uses: Vec<String>, //CHANGE THIS
+//    imports: Vec<String>, //CHANGE THIS
+//    globals: Vec<(String, TypeWrapper)>, //name, type
+//    functions: Vec<FunctionDef>,
+//}
 
 
 

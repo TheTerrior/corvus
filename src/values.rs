@@ -156,10 +156,10 @@ pub fn get_keywords<'a>() -> HashSet<&'a str> {
         "var", //define
         "fn", //define
 
-        "pub",
+        "pub", //globals
         "local", //globals
         "take", //globals
-        "drop", //globals
+        "drop",
 
         "if", //conditional
         "elif", //conditional

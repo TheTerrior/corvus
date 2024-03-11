@@ -1,29 +1,6 @@
 use std::collections::HashSet;
 
 
-//pub fn get_operators() -> Vec<Vec<&'static str>> {
-//    vec![
-//        vec!["\\", "->"],
-//        //vec!["&"], //reference
-//        //vec!["@"],
-//        vec!["!"],
-//        vec!["**"],
-//        vec!["*", "/", "%"],
-//        vec!["+", "-"],
-//        vec!["<<", ">>"],
-//        vec!["&"], //bitwise
-//        vec!["^"],
-//        vec!["|"],
-//        vec![":"],
-//        vec!["++"],
-//        vec!["==", "!=", "<", ">", "<=", ">="],
-//        vec!["&&"],
-//        vec!["||"],
-//        vec!["..", "..="],
-//        vec!["=", "+=", "-=", "*=", "/=", "%=", "&=", "|=", "^=", "<<=", ">>=", "**="],
-//    ]
-//}
-
 /// Returns a list of "sorted" self-tokenizing symbols
 pub fn get_tokenizing_symbols() -> Vec<&'static str> {
     vec![
@@ -91,65 +68,6 @@ pub fn get_tokenizing_symbols() -> Vec<&'static str> {
 }
 
 
-/*
-GLOBAL OPERATOR PRECEDENCE:
-    \ ->
-    & (functions)
-    @
-    !
-    ** 
-    * / %
-    + -
-    << >>
-    &
-    ^
-    |
-    :
-    ++
-    == != < > <= >=
-    &&
-    ||
-    .. ..=
-    = += -= *= /= %= &= |= ^= <<= >>= **=
-
-*/
-
-
-/*
-OPERATOR PRECEDENCE:
-
-ints and floats:
-    ** 
-    * / % //
-    + -
-    ++ --
-    = += -= *= /= %=
-
-bits:
-    !
-    << >>
-    &
-    ^
-    |
-    = += -= &= |= ^= <<= >>=
-
-bools:
-    !
-    &
-    ^
-    |
-    == != < > <= >=
-    &&
-    ||
-    = &= |= ^=
-
-lists:
-    :
-    ++
-
-*/
-
-
 pub fn get_keywords<'a>() -> HashSet<&'a str> {
     HashSet::from([
         "let", //define
@@ -212,5 +130,87 @@ pub fn get_keywords<'a>() -> HashSet<&'a str> {
         "as", //limited type casting
     ])
 }
+
+
+/*
+    Path,
+    Dot,
+    Index,
+    Not, Negate,
+    As,
+    Exp,
+    Mult, Div, Mod,
+    Add, Sub,
+    ShiftL, ShiftR,
+    Band,
+    Xor,
+    Bor,
+    Cons, Concat,
+    LT, GT, LEqT, GEqT, NEqT, EqT,
+    And,
+    Or,
+    Range, RangeEq,
+    Pipe,
+*/
+
+
+
+/*
+GLOBAL OPERATOR PRECEDENCE:
+    \ ->
+    & (functions)
+    @
+    !
+    ** 
+    * / %
+    + -
+    << >>
+    &
+    ^
+    |
+    :
+    ++
+    == != < > <= >=
+    &&
+    ||
+    .. ..=
+    = += -= *= /= %= &= |= ^= <<= >>= **=
+
+*/
+
+
+/*
+OPERATOR PRECEDENCE:
+
+ints and floats:
+    ** 
+    * / % //
+    + -
+    ++ --
+    = += -= *= /= %=
+
+bits:
+    !
+    << >>
+    &
+    ^
+    |
+    = += -= &= |= ^= <<= >>=
+
+bools:
+    !
+    &
+    ^
+    |
+    == != < > <= >=
+    &&
+    ||
+    = &= |= ^=
+
+lists:
+    :
+    ++
+
+*/
 
 

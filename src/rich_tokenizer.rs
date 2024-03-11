@@ -88,7 +88,7 @@ pub enum RichToken {
 
 
     // modules
-    Dive, //::
+    Path, //::
 
 
     // formatting
@@ -214,7 +214,7 @@ pub fn enrich(tokens: &Vec<String>) -> Result<Vec<RichToken>, CorvusError> {
             "\\" => ret.push(RichToken::LambdaStart),
             "->" => ret.push(RichToken::LambdaReturn),
             ":" => ret.push(RichToken::Colon),
-            "::" => ret.push(RichToken::Dive),
+            "::" => ret.push(RichToken::Path),
 
             "+" => ret.push(RichToken::Plus),
             "-" => ret.push(RichToken::Minus),

@@ -87,7 +87,6 @@ pub enum Operator {
     ShiftL,
     ShiftR,
 
-    Not,
     And,
     Or,
     Xor,
@@ -102,6 +101,13 @@ pub enum Operator {
     Dot, //for calling methods
     Path, //for modules
     Index, //[_]
+    As, //for some type casting
+}
+
+
+pub enum UnaryOperator {
+    Not,
+    Negate,
 }
 
 
@@ -145,16 +151,15 @@ pub enum Locality {
 
 
 pub struct Operation {
-    operator: Operator,
-    operand0: Expression,
-    operand1: Expression,
+    pub operator: Operator,
+    pub operand0: Expression,
+    pub operand1: Expression,
 }
 
 
-//pub struct Parameter {
-//    name: String,
-//    param_type: StandardType,
-//}
+pub struct UnaryOperation {
+    pub operator: UnaryOperator,
+}
 
 
 pub enum ImportType {
@@ -172,82 +177,84 @@ pub enum ImportType {
 pub enum Expression {
     Value(ExpressionType),
     Operation(Box<Operation>),
+    UnaryOperation(Box<UnaryOperation>),
     FunctionCall(String, Vec<Expression>), //variable name, parameters
+    FunctionCurry(String, Vec<Expression>), //variable name, parameters
 }
 
 
 pub struct Assignment {
-    name: Expression, //very limited however, just variable names and indexing
-    value: Expression,
-    locality: Locality,
-    assignment_type: AssignmentType,
-    variable_type: StandardType, //may use Unsure
+    pub name: Expression, //very limited however, just variable names and indexing
+    pub value: Expression,
+    pub locality: Locality,
+    pub assignment_type: AssignmentType,
+    pub variable_type: StandardType, //may use Unsure
 }
 
 
 /// Normal function definition, fully expanded, special type of assignment
 pub struct FunctionDef {
-    name: Expression,
-    parameters: Vec<String>, //parameter names
-    type_signature: StandardType, //very restricted, only Function value
-    locality: Locality, //restricted
-    block: Block,
+    pub name: Expression,
+    pub parameters: Vec<String>, //parameter names
+    pub type_signature: StandardType, //very restricted, only Function value
+    pub locality: Locality, //restricted
+    pub block: Block,
 }
 
 
 pub struct If {
-    condition: Expression,
-    block: Block,
+    pub condition: Expression,
+    pub block: Block,
 }
 
 
 pub struct Elif {
-    condition: Expression,
-    block: Block,
+    pub condition: Expression,
+    pub block: Block,
 }
 
 
 pub struct Else {
-    block: Block,
+    pub block: Block,
 }
 
 
 pub struct Loop {
-    block: Block,
+    pub block: Block,
 }
 
 
 pub struct While {
-    condition: Expression,
-    block: Block,
+    pub condition: Expression,
+    pub block: Block,
 }
 
 
 pub struct For {
-    pattern_match: Expression, //very restricted, just tuples and variable names
-    iteratable: Expression,
-    block: Block,
+    pub pattern_match: Expression, //very restricted, just tuples and variable names
+    pub iteratable: Expression,
+    pub block: Block,
 }
 
 
 pub struct Import {
-    import_type: ImportType,
-    line: Expression, //very restricted, will flesh this out later
+    pub import_type: ImportType,
+    pub line: Expression, //very restricted, will flesh this out later
 }
 
 
 pub struct Return {
-    value: Option<Expression>,
+    pub value: Option<Expression>,
 }
 
 
 pub struct Take {
-    value: String, //variable to take
+    pub value: String, //variable to take
 }
 
 
 pub struct Drop {
-    value: String, //variable to drop
+    pub value: String, //variable to drop
 }
 
 
@@ -273,13 +280,13 @@ pub enum Line {
 
 // Basis of many other things
 pub struct Block {
-    lines: Vec<Line>,
+    pub lines: Vec<Line>,
 }
 
 
 // Main scope
 pub struct Main {
-    block: Block,
+    pub block: Block,
 }
 
 

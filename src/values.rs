@@ -5,7 +5,6 @@ use std::collections::HashSet;
 pub fn get_tokenizing_symbols() -> Vec<&'static str> {
     vec![
         "$",
-        "::",
         ";",
         ",",
         ".",
@@ -15,7 +14,6 @@ pub fn get_tokenizing_symbols() -> Vec<&'static str> {
         "#/",
         "\\",
         "@",
-        ":",
         "\"",
         "'",
         "(",
@@ -24,6 +22,8 @@ pub fn get_tokenizing_symbols() -> Vec<&'static str> {
         "]",
         "{",
         "}",
+        "::",
+        ":",
         "->",
         "-=",
         "-",

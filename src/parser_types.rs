@@ -278,7 +278,7 @@ pub enum Line {
 }
 
 
-// Basis of many other things
+// Basis of many other things, contains a collection of lines, sometimes acts as a scope
 pub struct Block {
     pub lines: Vec<Line>,
 }

@@ -93,12 +93,12 @@ pub fn tokenize(input: &str) -> Vec<String> {
         accum.push(buf);
     }
     
-    accum
+    tokenize_garbage_collect(accum)
 }
 
 
 /// Clean up generated tokens
-pub fn tokenize_garbage_collect(tokens: &Vec<String>) -> Vec<String> {
+pub fn tokenize_garbage_collect(tokens: Vec<String>) -> Vec<String> {
     let mut ret = Vec::new();
     let mut ret1 = Vec::new();
     let mut state = State::Scan;

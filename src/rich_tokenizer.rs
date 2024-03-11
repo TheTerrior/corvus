@@ -155,7 +155,7 @@ pub enum RichToken {
 }
 
 
-pub fn enrich(tokens: &Vec<String>) -> Result<Vec<RichToken>, CorvusError> {
+pub fn enrich(tokens: Vec<String>) -> Result<Vec<RichToken>, CorvusError> {
     let mut ret: Vec<RichToken> = Vec::new();
 
     let mut i = 0;
@@ -302,7 +302,7 @@ pub fn enrich(tokens: &Vec<String>) -> Result<Vec<RichToken>, CorvusError> {
                         level -= 1;
                     }
                     if level == 0 {
-                        let enriched = enrich(&accum)?;
+                        let enriched = enrich(accum)?;
                         //ret.push(RichToken::Parentheses(enriched)); //need to enrich inner tokens
                         match opening { //need to enrich inner tokens and package them
                             "(" => ret.push(RichToken::Parentheses(enriched)), //need to enrich inner tokens

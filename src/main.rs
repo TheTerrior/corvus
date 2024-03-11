@@ -28,6 +28,8 @@ pub enum CorvusError {
     UnmatchedSquareBrackets,
     UnmatchedString,
     UnmatchedChar,
+    BadLine,
+    BadBlock,
 }
 impl fmt::Display for CorvusError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -44,8 +46,8 @@ fn main() {
     let input = String::from_utf8(bytes).expect("Couldn't read file correctly");
     
     let tokens = tokenizer::tokenize(&input);
-    let gb = tokenizer::tokenize_garbage_collect(&tokens);
-    let enriched_raw = rich_tokenizer::enrich(&gb);
+    drop(input); //deallcate because we don't need it
+    let enriched_raw = rich_tokenizer::enrich(tokens);
     if let Err(x) = enriched_raw {
         println!("{}", x);
         return;
@@ -53,7 +55,7 @@ fn main() {
     let enriched = enriched_raw.unwrap();
     println!("{:?}", enriched);
 
-    parser::parse(&enriched);
+    let x = parser::parse(enriched);
 }
 
 

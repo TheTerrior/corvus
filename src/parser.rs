@@ -26,14 +26,14 @@ OPERATOR PRECEDENCE:
 
 /// May contain a list of tokens or an indented block
 pub enum TokenBlock {
-    Tokens(Vec<RichToken>),
+    Tokens(Vec<Vec<RichToken>>), //list of lines of richtokens
     Block(IndentBlock),
 }
 
 
 /// An indented block, contains chunks, each of which is a TokenBlock
 pub struct IndentBlock {
-    indentation: usize,
+    //indentation: usize,
     chunks: Vec<TokenBlock>,
 }
 
@@ -52,47 +52,58 @@ pub fn extract_line(tokens: &mut Vec<RichToken>) -> Result<Vec<RichToken>, Corvu
 }
 
 
+/// Takes a block of code and recursively breaks it into deeper blocks and chunks
 pub fn extract_block(tokens: &mut Vec<RichToken>) -> Result<IndentBlock, CorvusError> {
-    let mut ret: Vec<TokenBlock> = Vec::new();
-    let mut buf: Vec<RichToken> = Vec::new();
-    let mut nested = false; //we will have to recurse if true
+    let mut chunks: Vec<TokenBlock> = Vec::new(); //returns blockized tokens
+    let mut lines: Vec<Vec<RichToken>> = Vec::new(); //contains lines for collection later
 
+    // retrieve indentation
     let indentation;
-    if let RichToken::Spaces(n) = tokens[0] {
-        indentation = n; //get indentation
+    if let RichToken::Spaces(n) = tokens[0] { //see if our tokens are correct
+        indentation = n; //get base indentation for this block
     } else {
         return Err(CorvusError::BadBlock);
     }
-    loop {
-        if tokens.len() > 0 {
-            let cur = extract_line(tokens)?;
-            if let RichToken::Spaces(n) = cur[0] {
-                // n can never be less than the indentation of the block
-                // because of the way I'll be recursing, it should be impossible
 
-                if n != indentation {
-                    nested = true;
+    // first split into lines
+    while tokens.len() > 0 {
+        lines.push(extract_line(tokens)?);
+    }
+
+    // then break into chunks of lines and blocks
+    let mut on_base = true; //start on base layer by default
+    let mut buf = Vec::new();
+    for i in 0..lines.len() {
+        match lines[i][0] {
+            RichToken::Spaces(n) if n == indentation => { //same indentation as base
+                if !on_base { //if just got back to the base layer
+                    on_base = true;
+                    chunks.push(TokenBlock::Block( //parse the inner block
+                        extract_block(&mut buf
+                            .into_iter()
+                            .flatten()
+                            .collect::<Vec<RichToken>>()
+                        )?
+                    ));
+                } else {
+                    buf.push(lines[i].clone()); //already on base layer, append to buf
+                }
+            },
+            RichToken::Spaces(_) => { //diff indentation as base
+                if on_base { //moving from base to inner layer
+                    on_base = false;
+                    chunks.push(TokenBlock::Tokens(buf)); //save the base chunk
+                } else {
+                    buf.push(lines[i].clone());
                 }
             }
-        } else {
-            break;
+            _ => return Err(CorvusError::BadBlock),
         }
+        buf = Vec::new();
     }
 
-    if nested {
-        todo!()
-    }
-    //if let RichToken::Spaces(n) = tokens[0] {
-    //    let indentation = n;
-    //    let mut chunks: Vec<TokenBlock> = Vec::new(); //ret
-    //    let buffer: Vec<RichToken> = Vec::new();
-
-
-    //    Ok(IndentBlock { indentation, chunks })
-    //} else {
-    //    Err(CorvusError::BadBlock)
-    //}
-    todo!()
+    //Ok(IndentBlock { indentation, chunks })
+    Ok(IndentBlock { chunks })
 }
 
 

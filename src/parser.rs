@@ -28,21 +28,12 @@ OPERATOR PRECEDENCE:
 #[derive(Debug)]
 pub enum TokenBlock {
     Tokens(Vec<Vec<RichToken>>), //list of lines of richtokens
-    Block(IndentBlock),
-}
-
-
-/// An indented block, contains chunks, each of which is a TokenBlock
-#[derive(Debug)]
-pub struct IndentBlock {
-    //indentation: usize,
-    chunks: Vec<TokenBlock>,
+    Block(Vec<TokenBlock>), //indented piece of code
 }
 
 
 /// Extracts one line, starting at a Spaces and ending at a Newline
 pub fn extract_line(tokens: &mut Vec<RichToken>) -> Result<Vec<RichToken>, CorvusError> {
-    println!("extracting a line: {:?}", tokens);
     if let RichToken::Spaces(_) = tokens[0] {
         for i in 0..tokens.len() {
             if let RichToken::Newline = tokens[i] {
@@ -56,7 +47,7 @@ pub fn extract_line(tokens: &mut Vec<RichToken>) -> Result<Vec<RichToken>, Corvu
 
 
 /// Takes a block of code and recursively breaks it into deeper blocks and chunks
-pub fn extract_block(mut tokens: Vec<RichToken>) -> Result<IndentBlock, CorvusError> {
+pub fn extract_block(mut tokens: Vec<RichToken>) -> Result<Vec<TokenBlock>, CorvusError> {
     if tokens.len() == 0 {
         return Err(CorvusError::EmptyBlock);
     }
@@ -130,7 +121,7 @@ pub fn extract_block(mut tokens: Vec<RichToken>) -> Result<IndentBlock, CorvusEr
         }
     }
 
-    Ok(IndentBlock { chunks })
+    Ok(chunks)
 }
 
 

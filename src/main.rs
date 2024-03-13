@@ -56,7 +56,6 @@ fn main() {
     let enriched = enriched_raw.unwrap();
     println!("{:?}", enriched);
 
-    //let x = parser::parse(enriched);
     let x = parser::extract_block(enriched);
     println!("{:?}", x);
 }

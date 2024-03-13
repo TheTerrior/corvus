@@ -43,8 +43,6 @@ pub enum RichToken {
     // list-like
     Char(String), //''
     String(String), //""
-    //Rune(String), //$''
-    //Chain(String), //$""
     RuneIdentifier,
 
 
@@ -121,13 +119,6 @@ pub enum RichToken {
     Use,
     Import,
     Return,
-    //Print,
-    //Println,
-    //Printf,
-    //Map,
-    //Filter,
-    //Fold,
-    //Reduce,
     Struct,
     Enum,
     VarI8,

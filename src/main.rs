@@ -30,6 +30,7 @@ pub enum CorvusError {
     UnmatchedChar,
     BadLine,
     BadBlock,
+    EmptyBlock,
 }
 impl fmt::Display for CorvusError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -55,7 +56,9 @@ fn main() {
     let enriched = enriched_raw.unwrap();
     println!("{:?}", enriched);
 
-    let x = parser::parse(enriched);
+    //let x = parser::parse(enriched);
+    let x = parser::extract_block(enriched);
+    println!("{:?}", x);
 }
 
 

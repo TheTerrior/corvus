@@ -1,7 +1,8 @@
-mod values;
+mod tokenizer_values;
 mod tokenizer;
 mod rich_tokenizer;
-mod parser_types;
+mod ast_types;
+mod preparser;
 mod parser;
 
 use std::{fs, error::Error, fmt};
@@ -56,8 +57,8 @@ fn main() {
     let enriched = enriched_raw.unwrap();
     println!("{:?}", enriched);
 
-    let x = parser::extract_block(enriched);
-    println!("{:?}", x);
+    let chunks = preparser::into_chunks(enriched);
+    println!("{:?}", chunks);
 }
 
 

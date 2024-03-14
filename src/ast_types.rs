@@ -146,7 +146,6 @@ pub enum Locality {
     PubLet,
     PubVar, //mutable within the file
     PubConst,
-    //Universal, //mutable from any file
 }
 
 

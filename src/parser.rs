@@ -25,8 +25,10 @@ OPERATOR PRECEDENCE:
 */
 
 
-pub fn parse_expression(tokens: &[RichToken]) -> Expression {
-    Expression::Value(ExpressionType::I8(String::from("placeholder")))
+/// Parse an expression into a tree
+pub fn parse_expression(tokens: &[RichToken]) -> Result<Expression, CorvusError> {
+    //Ok(Expression::Value(ExpressionType::I8(String::from("placeholder"))))
+    Err(CorvusError::BadExpression)
 }
 
 

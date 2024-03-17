@@ -1,4 +1,4 @@
-use crate::values::{get_keywords, get_tokenizing_symbols};
+use crate::tokenizer_values::{get_keywords, get_tokenizing_symbols};
 
 
 /// Helps tokenizer keep track of current process

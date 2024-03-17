@@ -22,16 +22,21 @@ pub struct Args {
 
 #[derive(Debug, Clone)]
 pub enum CorvusError {
-    FileRead,
+    // Rich Tokenizer
     NumberParse, //likely a compiler error not a user error
     UnmatchedParentheses,
     UnmatchedCurlyBraces,
     UnmatchedSquareBrackets,
     UnmatchedString,
     UnmatchedChar,
+
+    // Preparser
     BadLine,
     BadBlock,
     EmptyBlock,
+    
+    // Parser
+    BadExpression,
 }
 impl fmt::Display for CorvusError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
